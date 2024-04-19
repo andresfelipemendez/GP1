@@ -1,0 +1,6 @@
+
+/GP1/.vs
+*.exe
+*.pdb
+/GP1/GP1/Debug
+/GP1/GP1/x64
