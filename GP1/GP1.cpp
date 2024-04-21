@@ -6,14 +6,15 @@
 
 int main(int argc, char* argv[])
 {
+    GameData gameData;
     Game game;
-    bool success = game.Initialize();
+    bool success = game.Initialize(gameData);
     if(success)
     {
-      game.RunLoop();
+      game.RunLoop(gameData);
 
     }
-    game.Shutdown();
+    game.Shutdown(gameData);
     return 0;
 }
 
@@ -26,4 +27,4 @@ int main(int argc, char* argv[])
 //   3. Use the Output window to see build output and other messages
 //   4. Use the Error List window to view errors
 //   5. Go to Project > Add New Item to create new code files, or Project > Add Existing Item to add existing code files to the project
-//   6. In the future, to open this project again, go to File > Open > Project and select the .sln file
+//   6. Ins the future, to open this project again, go to File > Open > Project and select the .sln file
