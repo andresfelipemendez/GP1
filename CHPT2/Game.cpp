@@ -1,5 +1,6 @@
 #include "Game.h"
 #include "Actor.h"
+#include <SDL_image.h>
 
 Game::Game()
 {
@@ -17,6 +18,7 @@ bool Game::Initialize()
 		SDL_Log("Unable to initialize SDL: %s", SDL_GetError());
 		return false;
 	}
+	IMG_Init(IMG_INIT_PNG);
 
 	mWindow = SDL_CreateWindow(
 		"Game Programming in C++ (Chapter 1)",
@@ -37,6 +39,7 @@ bool Game::Initialize()
 		-1,
 		SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC
 	);
+
 	mIsRunning = true;
 	return true;
 }
@@ -63,6 +66,22 @@ void Game::AddActor(Actor* actor)
 	{
 		mActors.emplace_back(actor);
 	}
+}
+
+void Game::AddSprite(SpriteComponent* sprite)
+{
+	int myDrawOrder = sprite->mDrawOrder;
+	auto iter = mSprites.begin();
+	for (;
+		iter != mSprites.end();
+		++iter
+	) {
+		if (myDrawOrder < (*iter)->mDrawOrder)
+		{
+			break;
+		}
+	}
+	mSprites.insert(iter, sprite);
 }
 
 void Game::ProcessInput()

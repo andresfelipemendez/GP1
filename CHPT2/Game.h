@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <SDL.h>
+#include "SpriteComponent.h"
 
 class Game
 {
@@ -25,6 +26,9 @@ private:
 	std::vector<class Actor*> mActors;
 	std::vector<class Actor*> mPendingActors;
 
+	std::vector<SpriteComponent*> mSprites;
+
+	void AddSprite(SpriteComponent* sprite);
 	void ProcessInput();
 	void UpdateGame();
 	void GenerateOutput();
