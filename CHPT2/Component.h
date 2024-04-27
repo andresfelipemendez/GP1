@@ -1,5 +1,5 @@
 #pragma once
-class Component
+class Component 
 {
 public:
 	Component(class Actor* owner, int updateOrder = 100);

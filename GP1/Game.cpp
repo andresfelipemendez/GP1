@@ -22,7 +22,7 @@ bool Game::Initialize(GameData& gameData) {
 		100,
 		1024,
 		768,
- 	0
+	0
 	);
 
 	if (!gameData.window) {

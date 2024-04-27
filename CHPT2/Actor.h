@@ -1,5 +1,5 @@
 #pragma once
-#include "Vector2.h"
+#include "Math.h"
 #include <vector>
 
 class Actor
@@ -21,8 +21,8 @@ public:
 
 	virtual void UpdateActor(float deltaTime);
 
-	void AddComponent(class Components* components);
-	void RemoveComponent(class Components* component);
+	void AddComponent(class Component* components);
+	void RemoveComponent(class Component* component);
 // private: I have getter and setters they are dumb
 	State mState;
 	Vector2 mPosition;

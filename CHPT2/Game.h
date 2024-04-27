@@ -1,35 +1,46 @@
 #pragma once
-
-#include <vector>
 #include <SDL.h>
-#include "SpriteComponent.h"
+#include <unordered_map>
+#include <string>
+#include <vector>
 
 class Game
 {
 public:
 	Game();
-	~Game();
-
 	bool Initialize();
 	void RunLoop();
 	void ShutDown();
 
 	void AddActor(class Actor* actor);
-private:
-	SDL_Window* mWindow = nullptr;
-	SDL_Renderer* mRenderer = nullptr;
-	bool mIsRunning = false;
-	bool mUpdatingActors = false;
+	void RemoveActor(class Actor* actor);
 
-	Uint32 mTicksCount = 0;
 
-	std::vector<class Actor*> mActors;
-	std::vector<class Actor*> mPendingActors;
+	void AddSprite(class SpriteComponent* sprite);
+	void RemoveSprite(class SpriteComponent* sprite);
 
-	std::vector<SpriteComponent*> mSprites;
+	SDL_Texture* GetTexture(const std::string& fileName);
 
-	void AddSprite(SpriteComponent* sprite);
 	void ProcessInput();
 	void UpdateGame();
 	void GenerateOutput();
+	void LoadData();
+	void UnloadData();
+
+	std::unordered_map<std::string, SDL_Texture*> mTextures;
+
+	std::vector<class Actor*> mActors;
+
+	std::vector<class Actor*> mPendingActors;
+
+	std::vector<class SpriteComponent*> mSprites;
+
+//private:
+	SDL_Window* mWindow = nullptr;
+	SDL_Renderer* mRenderer = nullptr;
+	Uint32 mTicksCount = 0;
+	bool mIsRunning = false;
+	bool mUpdatingActors = false;
+	
+	class Ship* mShip = nullptr;
 };
