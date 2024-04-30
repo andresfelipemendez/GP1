@@ -5,5 +5,8 @@
 int main(int argc, char* argv[])
 {
     GameData gameData;
-    Game game;
+
+    bool success = Initialize(gameData);
+
+    return 0;
 }

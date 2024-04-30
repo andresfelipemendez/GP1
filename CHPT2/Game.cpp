@@ -30,11 +30,11 @@ bool Game::Initialize()
 		768,
 		0
 	);
+
 	if (!mWindow) {
 		SDL_Log("Failed to create window: %s", SDL_GetError());
 		return false;
 	}
-
 
 	mRenderer = SDL_CreateRenderer(
 		mWindow,
