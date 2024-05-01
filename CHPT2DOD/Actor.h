@@ -8,9 +8,3 @@ struct transform {
 	float mScale;
 	float mRotation;
 };
-
-std::vector <int> activeActors;
-std::vector <int> pausedActors;
-std::vector <int> deadActors;
-
-std::vector<transform> transforms;
