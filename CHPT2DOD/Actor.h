@@ -4,7 +4,7 @@
 #include "Math.h"
 
 struct transform {
-	Vector2 mPosition;
-	float mScale;
-	float mRotation;
+	Vector2 mPosition{0.0f,0.0f};
+	float mScale = 1.0f;
+	float mRotation = 0.0f;
 };

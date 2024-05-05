@@ -178,8 +178,9 @@ SDL_Texture* GetTexture(const std::string& fileName, SDL_Renderer* renderer)
 void LoadData(GameData* gd, entt::registry* registry)
 {
 
-	const auto entity = registry->create();
-	registry->emplace<transform>(entity, 0.0f,0.0f,1.0f,1.0f);
+	const auto ship = registry->create();
+	registry->emplace<transform>(ship, 100.0f,384.0f,1.5f,1.0f);
+	registry->emplace<transform>(ship, 100.0f, 384.0f, 1.5f, 1.0f);
 
 	const auto bgEntity = registry->create();
 	SDL_Texture* bg1 = GetTexture("Assets/Farback01.png", gd->renderer);

@@ -11,3 +11,10 @@ struct BGTexture
 	Vector2 mOffest;
 	float mScrollSpeed;
 };
+
+struct AnimSprite {
+	SDL_Texture* animFrames;
+	size_t numFrames;
+	float currentFrame;
+	float animFPS;
+};

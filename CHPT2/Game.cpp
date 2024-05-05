@@ -165,7 +165,7 @@ void Game::LoadData()
 	bg->mScrollSpeed = -100.0f;
 
 	bg = new BGSpriteComponent(temp, 50);
-	bg->mScreenSize = Vector2(1024.0f, 168.0f);
+	bg->mScreenSize = Vector2(1024.0f, 768.0f);
 	bgtexs = {
 		GetTexture("Assets/Stars.png"),
 		GetTexture("Assets/Stars.png")
