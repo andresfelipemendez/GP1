@@ -3,6 +3,7 @@
 #include "Actor.h"
 #include "InputSystem.h"
 #include "Components.h"
+#include "AnimatedSprite.h"
 
 #include <SDL.h>
 
@@ -47,13 +48,12 @@ bool Initialize(GameData* gd, entt::registry* registry)
 	gd->isRunning = true;
 	return true;
 }
-
 void RunLoop(GameData* gd, entt::registry* registry)
 {
   while(gd->isRunning){
 	ProcessInput(gd, registry);
 	UpdateGame(gd, registry);
-	GenerateOutput(gd);
+	GenerateOutput(gd, registry);
   }
 }
 
@@ -83,7 +83,7 @@ void ProcessInput(GameData* gd, entt::registry* registry)
 	}
 
 	// ship process input?
-	auto view = registry->view<PlayerInput>();
+  /*  auto view = registry->view<PlayerInput>();
 	view.each([state](auto& playerInput) {
 		playerInput.mRightSpeed = 0.0f;
 		playerInput.mDownSpeed = 0.0f;
@@ -108,6 +108,7 @@ void ProcessInput(GameData* gd, entt::registry* registry)
 			playerInput.mDownSpeed -= 300.0f;
 		}
 	});
+  */
 }
 
 void UpdateGame(GameData* gd, entt::registry* registry)
@@ -123,21 +124,16 @@ void UpdateGame(GameData* gd, entt::registry* registry)
 	}
 	gd->ticksCount = SDL_GetTicks();
 
-	// update systems?
-	auto view = registry->view<PlayerInput>();
-	view.each([](auto& playerInput) {
-	});
+  RunAnimationSystem(registry, deltaTime);
 }
 
-void GenerateOutput(GameData* gd)
+void GenerateOutput(GameData* gd, entt::registry* registry)
 {
 	SDL_SetRenderDrawColor(gd->renderer, 0, 0, 0, 255);
 	SDL_RenderClear(gd->renderer);
 
-	/*for (auto sprite : mSprites)
-	{
-		sprite->Draw(mRenderer);
-	}*/
+//  RunAnimationSystem(registry)
+	Draw(gd->renderer,registry);
 
 	SDL_RenderPresent(gd->renderer);
 }
@@ -177,14 +173,15 @@ SDL_Texture* GetTexture(const std::string& fileName, SDL_Renderer* renderer)
 
 void LoadData(GameData* gd, entt::registry* registry)
 {
+	SetFrame("ship1", GetTexture("Assets/Ship01.png", gd->renderer));
+	SetFrame("ship2", GetTexture("Assets/Ship02.png", gd->renderer));
+	SetFrame("ship3", GetTexture("Assets/Ship03.png", gd->renderer));
+	SetFrame("ship4", GetTexture("Assets/Ship04.png", gd->renderer));
 
-	const auto ship = registry->create();
-	registry->emplace<transform>(ship, 100.0f,384.0f,1.5f,1.0f);
-	registry->emplace<transform>(ship, 100.0f, 384.0f, 1.5f, 1.0f);
-
-	const auto bgEntity = registry->create();
-	SDL_Texture* bg1 = GetTexture("Assets/Farback01.png", gd->renderer);
-	registry->emplace<BGTexture>(bgEntity, bg1, 0.0f, 0.0f, -100.0f);
+	auto entity = registry->create();
+	registry->emplace<position>(entity, 100.0f, 384.0f);
+	registry->emplace<Sprite>(entity, nullptr, 100,0,0, 1.0f); // SDL_QueryTexture gets the width and height 
+	registry->emplace<AnimatedSprite>(entity, "ship", 24.0f, 4);
 }
 
 void UnloadData(GameData* gd)
