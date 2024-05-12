@@ -132,14 +132,12 @@ void GenerateOutput(GameData* gd, entt::registry* registry)
 	SDL_SetRenderDrawColor(gd->renderer, 0, 0, 0, 255);
 	SDL_RenderClear(gd->renderer);
 
-//  RunAnimationSystem(registry)
 	Draw(gd->renderer,registry);
 
 	SDL_RenderPresent(gd->renderer);
 }
 
 std::unordered_map<std::string, SDL_Texture*> mTextures;
-
 SDL_Texture* GetTexture(const std::string& fileName, SDL_Renderer* renderer)
 {
 	SDL_Texture* tex = nullptr;
@@ -162,7 +160,7 @@ SDL_Texture* GetTexture(const std::string& fileName, SDL_Renderer* renderer)
 		SDL_FreeSurface(surf);
 		if (!tex)
 		{
-			SDL_Log("Failed to converte surfave to texture for %s", fileName.c_str());
+			SDL_Log("Failed to convert surfave to texture for %s", fileName.c_str());
 			return nullptr;
 		}
 
@@ -173,15 +171,17 @@ SDL_Texture* GetTexture(const std::string& fileName, SDL_Renderer* renderer)
 
 void LoadData(GameData* gd, entt::registry* registry)
 {
-	SetFrame("ship1", GetTexture("Assets/Ship01.png", gd->renderer));
-	SetFrame("ship2", GetTexture("Assets/Ship02.png", gd->renderer));
-	SetFrame("ship3", GetTexture("Assets/Ship03.png", gd->renderer));
-	SetFrame("ship4", GetTexture("Assets/Ship04.png", gd->renderer));
 
 	auto entity = registry->create();
-	registry->emplace<position>(entity, 100.0f, 384.0f);
-	registry->emplace<Sprite>(entity, nullptr, 100,0,0, 1.0f); // SDL_QueryTexture gets the width and height 
-	registry->emplace<AnimatedSprite>(entity, "ship", 24.0f, 4);
+	const int frameEntity = 1;
+	SetFrame(frameEntity, 1, GetTexture("Assets/Ship01.png", gd->renderer));
+	SetFrame(frameEntity, 2, GetTexture("Assets/Ship02.png", gd->renderer));
+	SetFrame(frameEntity, 3, GetTexture("Assets/Ship03.png", gd->renderer));
+	SetFrame(frameEntity, 4, GetTexture("Assets/Ship04.png", gd->renderer));
+
+	registry->emplace<Position>(entity, 100.0f, 384.0f);
+	registry->emplace<Sprite>(entity, nullptr, 100,0,0, 1.5f); // SDL_QueryTexture gets the width and height 
+	registry->emplace<AnimatedSprite>(entity, frameEntity,  4, 24.0f, 0.0f);
 }
 
 void UnloadData(GameData* gd)

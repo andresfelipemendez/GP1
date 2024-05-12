@@ -6,9 +6,9 @@
 
 struct AnimatedSprite
 {
-  std::string name;
-	float frameRate;
+	int entityIndex;
 	int numFrames;
+	float frameRate;
 	float currentFrame;
 };
 
@@ -21,7 +21,7 @@ struct Sprite
 	float scale;
 };
 
-struct position
+struct Position
 {
 	float x;
 	float y;
@@ -33,5 +33,8 @@ void RunAnimationSystem(entt::registry* registry, float deltaTime);
 
 void Draw(SDL_Renderer* renderer, entt::registry* registry);
 
-SDL_Texture* GetFrame(const std::string& name);
-void SetFrame(const std::string& name, SDL_Texture* texture);
+//SDL_Texture* GetFrame(const std::string& name);
+//void SetFrame(const std::string& name, SDL_Texture* texture);
+
+SDL_Texture* GetFrame(int entity, int frame);
+void SetFrame(int entity, int frame, SDL_Texture* texture);

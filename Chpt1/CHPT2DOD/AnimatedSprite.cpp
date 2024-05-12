@@ -2,14 +2,23 @@
 #include "entt/entt.hpp"
 #include <iostream>
 
-std::unordered_map<std::string, SDL_Texture*> _frames;
+typedef std::pair<int, int> pair;
+struct pair_hash
+{
+    template <class T1, class T2>
+    std::size_t operator() (const std::pair<T1, T2>& pair) const {
+        return std::hash<T1>()(pair.first) ^ std::hash<T2>()(pair.second);
+    }
+};
 
-SDL_Texture* GetFrame(const std::string& name) {
-    return _frames.at(name);
+std::unordered_map<pair, SDL_Texture*, pair_hash> _frames;
+
+SDL_Texture* GetFrame(int entity, int frame) {
+    return _frames.at({entity, frame});
 }
 
-void SetFrame(const std::string& name, SDL_Texture* texture) {
-    _frames.emplace(name, texture);
+void SetFrame(int entity, int frame, SDL_Texture* texture) {
+    _frames.insert({ {entity, frame}, texture });
 }
 
 void RunAnimationSystem(entt::registry* registry, float deltaTime)
@@ -19,11 +28,10 @@ void RunAnimationSystem(entt::registry* registry, float deltaTime)
   std::vector<int> listOfIndexesToQuery;
   view.each([&listOfIndexesToQuery, deltaTime](auto& animsprite, auto& sprite){
       animsprite.currentFrame += animsprite.frameRate * deltaTime;
-      std::string name = animsprite.name;
-      name += std::to_string((static_cast<int>(animsprite.currentFrame) % animsprite.numFrames) + 1);
+      int frameIndex = (static_cast<int>(animsprite.currentFrame) % animsprite.numFrames) + 1;
 
       // get texture
-      auto texture = _frames.at(name);
+      auto texture = _frames.at({ animsprite.entityIndex, frameIndex});
       int width, height;
       SDL_QueryTexture(texture, nullptr, nullptr, &width, &height);
       sprite.texture = texture;
@@ -35,7 +43,7 @@ void RunAnimationSystem(entt::registry* registry, float deltaTime)
 
 void Draw(SDL_Renderer* renderer,entt::registry* registry)
 {
-    auto view = registry->view<const Sprite, const position>();
+    auto view = registry->view<const Sprite, const Position>();
 
     view.each([renderer](const auto& sprite, const auto& pos) {
         SDL_Rect r;
