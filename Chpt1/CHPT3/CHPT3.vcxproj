@@ -135,10 +135,14 @@
   <ItemGroup>
     <ClCompile Include="Actor.cpp" />
     <ClCompile Include="AnimSpriteComponent.cpp" />
+    <ClCompile Include="Asteroid.cpp" />
     <ClCompile Include="CHPT3.cpp" />
+    <ClCompile Include="CircleComponent.cpp" />
     <ClCompile Include="Component.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="Math.cpp" />
+    <ClCompile Include="MoveComponent.cpp" />
+    <ClCompile Include="Random.cpp" />
     <ClCompile Include="Ship.cpp" />
     <ClCompile Include="SpriteComponent.cpp" />
     <ClCompile Include="BGSpriteComponent.cpp" />
@@ -146,10 +150,14 @@
   <ItemGroup>
     <ClInclude Include="Actor.h" />
     <ClInclude Include="AnimSpriteComponent.h" />
+    <ClInclude Include="Asteroid.h" />
     <ClInclude Include="BGSpriteComponent.h" />
+    <ClInclude Include="CircleComponent.h" />
     <ClInclude Include="Component.h" />
     <ClInclude Include="Game.h" />
     <ClInclude Include="Math.h" />
+    <ClInclude Include="MoveComponent.h" />
+    <ClInclude Include="Random.h" />
     <ClInclude Include="Ship.h" />
     <ClInclude Include="SpriteComponent.h" />
     <ClInclude Include="Vector2.h" />

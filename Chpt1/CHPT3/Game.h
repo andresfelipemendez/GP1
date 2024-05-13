@@ -21,6 +21,11 @@ public:
 
 	SDL_Texture* GetTexture(const std::string& fileName);
 
+	void AddAsteroid(class Asteroid* ast);
+	void RemoveAsteroid(class Asteroid* ast);
+	std::vector<class Asteroid*>& GetAsteroids() { return mAsteroids; }
+
+	//private:
 	void ProcessInput();
 	void UpdateGame();
 	void GenerateOutput();
@@ -35,7 +40,6 @@ public:
 
 	std::vector<class SpriteComponent*> mSprites;
 
-//private:
 	SDL_Window* mWindow = nullptr;
 	SDL_Renderer* mRenderer = nullptr;
 	Uint32 mTicksCount = 0;
@@ -43,4 +47,6 @@ public:
 	bool mUpdatingActors = false;
 	
 	class Ship* mShip = nullptr;
+	std::vector<class Asteroid*> mAsteroids;
+
 };

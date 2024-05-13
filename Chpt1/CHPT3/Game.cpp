@@ -5,6 +5,7 @@
 #include "SpriteComponent.h"
 #include "Ship.h"
 #include "BGSpriteComponent.h"
+#include "Asteroid.h"
 
 Game::Game() :
 	mWindow(nullptr),
@@ -23,7 +24,7 @@ bool Game::Initialize()
 	}
 
 	mWindow = SDL_CreateWindow(
-		"Game Programming in C++ (Chapter 2)",
+		"Game Programming in C++ (Chapter 3)",
 		100,
 		100,
 		1024,
@@ -149,29 +150,13 @@ void Game::GenerateOutput()
 void Game::LoadData()
 {
 	mShip = new Ship(this);
-	mShip->mPosition = Vector2(100.0f, 384.0f);
-	mShip->mScale = 1.5f;
+	mShip->mPosition = Vector2(512.0f, 384.0f);
+	mShip->mRotation = Math::PiOver2;
 
-	Actor* temp = new Actor(this);
-	temp->mPosition = Vector2(512.0f, 384.0f);
-
-	BGSpriteComponent* bg = new BGSpriteComponent(temp);
-	bg->mScreenSize = Vector2(1024.0f, 768.0f);
-	std::vector<SDL_Texture*> bgtexs = {
-		GetTexture("Assets/Farback01.png"),
-		GetTexture("Assets/Farback02.png")
-	};
-	bg->SetBGTextures(bgtexs);
-	bg->mScrollSpeed = -100.0f;
-
-	bg = new BGSpriteComponent(temp, 50);
-	bg->mScreenSize = Vector2(1024.0f, 768.0f);
-	bgtexs = {
-		GetTexture("Assets/Stars.png"),
-		GetTexture("Assets/Stars.png")
-	};
-	bg->SetBGTextures(bgtexs);
-	bg->mScrollSpeed = -200.0f;
+	const int numAsteroids = 20;
+	for (int i = 0; i < numAsteroids; i++) {
+		new Asteroid(this);
+	}
 }
 
 void Game::UnloadData()
@@ -212,7 +197,7 @@ SDL_Texture* Game::GetTexture(const std::string& fileName)
 		SDL_FreeSurface(surf);
 		if (!tex)
 		{
-			SDL_Log("Failed to converte surfave to texture for %s", fileName.c_str());
+			SDL_Log("Failed to convert surface to texture for %s", fileName.c_str());
 			return nullptr;
 		}
 
@@ -221,7 +206,18 @@ SDL_Texture* Game::GetTexture(const std::string& fileName)
 	return tex;
 }
 
+void Game::AddAsteroid(Asteroid* ast)
+{
+	mAsteroids.emplace_back(ast);
+}
 
+void Game::RemoveAsteroid(Asteroid* ast)
+{
+	auto iter = std::find(mAsteroids.begin(), mAsteroids.end(), ast);
+	if (iter != mAsteroids.end()) {
+		mAsteroids.erase(iter);
+	}
+}
 
 void Game::ShutDown()
 {

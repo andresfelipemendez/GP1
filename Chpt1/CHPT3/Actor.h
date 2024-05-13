@@ -30,5 +30,9 @@ public:
 	float mRotation;
 	std::vector<class Component*> mComponents;
 	class Game* mGame;
+
+	Vector2 GetForward() {
+		return Vector2(Math::Cos(mRotation), -Math::Sin(mRotation));
+	}
 };
 
