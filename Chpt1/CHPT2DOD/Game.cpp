@@ -125,6 +125,7 @@ void UpdateGame(GameData* gd, entt::registry* registry)
 	gd->ticksCount = SDL_GetTicks();
 
   RunAnimationSystem(registry, deltaTime);
+  UpdateBackGroundSprites(registry, deltaTime);
 }
 
 void GenerateOutput(GameData* gd, entt::registry* registry)
@@ -171,20 +172,27 @@ SDL_Texture* GetTexture(const std::string& fileName, SDL_Renderer* renderer)
 
 void LoadData(GameData* gd, entt::registry* registry)
 {
-
-	auto entity = registry->create();
+	auto ship = registry->create();
 	const int frameEntity = 1;
 	SetFrame(frameEntity, 1, GetTexture("Assets/Ship01.png", gd->renderer));
 	SetFrame(frameEntity, 2, GetTexture("Assets/Ship02.png", gd->renderer));
 	SetFrame(frameEntity, 3, GetTexture("Assets/Ship03.png", gd->renderer));
 	SetFrame(frameEntity, 4, GetTexture("Assets/Ship04.png", gd->renderer));
 
-	registry->emplace<Position>(entity, 100.0f, 384.0f);
-	registry->emplace<Sprite>(entity, nullptr, 100,0,0, 1.5f); // SDL_QueryTexture gets the width and height 
-	registry->emplace<AnimatedSprite>(entity, frameEntity,  4, 24.0f, 0.0f);
+	registry->emplace<Position>(ship, 100.0f, 384.0f);
+	registry->emplace<Sprite>(ship, nullptr, 100,0,0, 1.5f); // SDL_QueryTexture gets the width and height 
+	registry->emplace<AnimatedSprite>(ship, frameEntity,  4, 24.0f, 0.0f);
+	registry->emplace<Input>(ship, 0.0f,0.0f);
+	auto scrollingBackground1 = registry->create();
+	registry->emplace<BGSprite>(scrollingBackground1, GetTexture("Assets/Farback01.png", gd->renderer), 0.0f, 0.0f, 1024.0f, 768.0f, -100.0f);
+	registry->emplace<Position>(scrollingBackground1, 512.0f, 384.0f);
+	auto scrollingBackground2 = registry->create();
+	registry->emplace<BGSprite>(scrollingBackground2, GetTexture("Assets/Farback02.png", gd->renderer), 1024.0f, 0.0f, 1024.0f, 768.0f, -100.0f);
+	registry->emplace<Position>(scrollingBackground2, 512.0f, 384.0f);
 }
 
 void UnloadData(GameData* gd)
 {
 
 }
+

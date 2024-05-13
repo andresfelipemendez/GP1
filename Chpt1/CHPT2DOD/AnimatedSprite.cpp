@@ -23,14 +23,12 @@ void SetFrame(int entity, int frame, SDL_Texture* texture) {
 
 void RunAnimationSystem(entt::registry* registry, float deltaTime)
 {
-
   auto view = registry->view<AnimatedSprite, Sprite>();
   std::vector<int> listOfIndexesToQuery;
   view.each([&listOfIndexesToQuery, deltaTime](auto& animsprite, auto& sprite){
       animsprite.currentFrame += animsprite.frameRate * deltaTime;
       int frameIndex = (static_cast<int>(animsprite.currentFrame) % animsprite.numFrames) + 1;
 
-      // get texture
       auto texture = _frames.at({ animsprite.entityIndex, frameIndex});
       int width, height;
       SDL_QueryTexture(texture, nullptr, nullptr, &width, &height);
@@ -38,13 +36,45 @@ void RunAnimationSystem(entt::registry* registry, float deltaTime)
       sprite.texWidth = width;
       sprite.texHeight = height;
   });
+}
+
+void UpdateBackGroundSprites(entt::registry* registry, float deltaTime)
+{
+    auto view = registry->view<BGSprite>();
+    view.each([deltaTime](BGSprite& bgSprite) {
+        bgSprite.offsetX += bgSprite.mScrollSpeed * deltaTime;
+        if (bgSprite.offsetX < -bgSprite.screenSizeX) {
+            bgSprite.offsetX = bgSprite.screenSizeX - 1;
+        }
+    });
+}
+
+void UpdateInputSystem(entt::registry* registry, const uint8_t* state, float deltaTime) {
 
 }
 
 void Draw(SDL_Renderer* renderer,entt::registry* registry)
 {
-    auto view = registry->view<const Sprite, const Position>();
 
+    auto bgSprites = registry->view<const BGSprite, const Position>();
+
+    bgSprites.each([renderer](const BGSprite& BGSprite, const Position& pos) {
+        SDL_Rect r;
+        r.w = static_cast<int>(BGSprite.screenSizeX);
+        r.h = static_cast<int>(BGSprite.screenSizeY);
+
+        r.x = static_cast<int>( BGSprite.offsetX);
+        r.y = static_cast<int>( 0);
+
+        SDL_RenderCopy(
+            renderer,
+            BGSprite.texture,
+            nullptr,
+            &r
+        );
+    });
+
+    auto view = registry->view<const Sprite, const Position>();
     view.each([renderer](const auto& sprite, const auto& pos) {
         SDL_Rect r;
         r.w = static_cast<int>(sprite.texWidth * sprite.scale);
