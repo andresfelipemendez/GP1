@@ -212,16 +212,15 @@ SDL_Texture* Game::GetTexture(const std::string& fileName)
 		SDL_FreeSurface(surf);
 		if (!tex)
 		{
-			SDL_Log("Failed to converte surfave to texture for %s", fileName.c_str());
+			SDL_Log("Failed to convert surface to texture for %s", fileName.c_str());
 			return nullptr;
 		}
 
 		mTextures.emplace(fileName.c_str(), tex);
 	}
+
 	return tex;
 }
-
-
 
 void Game::ShutDown()
 {
@@ -259,7 +258,6 @@ void Game::RemoveActor(Actor* actor)
 		std::iter_swap(iter, mActors.end() - 1);
 		mActors.pop_back();
 	}
-	
 }
 
 void Game::AddSprite(SpriteComponent* sprite)

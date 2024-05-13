@@ -44,7 +44,8 @@ struct Input {
 
 void UpdateBackGroundSprites(entt::registry* registry, float deltaTime);
 void RunAnimationSystem(entt::registry* registry, float deltaTime);
-void UpdateInputSystem(entt::registry* registry, const uint8_t* state, float deltaTime);
+void UpdateInputSystem(entt::registry* registry, const uint8_t* state);
+void UpdateInput(entt::registry* registry, float deltaTime);
 
 void Draw(SDL_Renderer* renderer, entt::registry* registry);
 

@@ -53,9 +53,60 @@ void UpdateInputSystem(entt::registry* registry, const uint8_t* state, float del
 
 }
 
+void UpdateInputSystem(entt::registry* registry, const uint8_t* state) {
+    auto bgSprites = registry->view<Input>();
+    bgSprites.each([state](Input& input) {
+        input.velX = 0.0f;
+        input.velY = 0.0f;
+        if (state[SDL_SCANCODE_D])
+        {
+            input.velX += 250.0f;
+        }
+
+        if (state[SDL_SCANCODE_A])
+        {
+            input.velX -= 250.0f;
+        }
+
+        if (state[SDL_SCANCODE_S])
+        {
+            input.velY += 300.0f;
+        }
+
+        if (state[SDL_SCANCODE_W])
+        {
+            input.velY -= 300.0f;
+        }
+    });
+}
+
+void UpdateInput(entt::registry* registry, float deltaTime) {
+    auto inputView = registry->view<const Input, Position>();
+    inputView.each([deltaTime](const Input& input, Position& pos) {
+        Position _pos = pos;
+        _pos.x += input.velX * deltaTime;
+        _pos.y += input.velY * deltaTime;
+
+        if (_pos.x < 25.0f) {
+            _pos.x = 25.0f;
+        }
+        else if (_pos.x > 500.0f)
+        {
+            _pos.x = 500.0f;
+        }
+
+        if (_pos.y < 25.0f) {
+            _pos.y = 25.0f;
+        }
+        else if (pos.y > 743.0f) {
+            _pos.y = 743.0f;
+        }
+        pos = _pos;
+    });
+}
+
 void Draw(SDL_Renderer* renderer,entt::registry* registry)
 {
-
     auto bgSprites = registry->view<const BGSprite, const Position>();
 
     bgSprites.each([renderer](const BGSprite& BGSprite, const Position& pos) {

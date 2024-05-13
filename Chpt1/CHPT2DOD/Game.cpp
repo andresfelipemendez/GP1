@@ -82,33 +82,8 @@ void ProcessInput(GameData* gd, entt::registry* registry)
 		gd->isRunning = false;
 	}
 
-	// ship process input?
-  /*  auto view = registry->view<PlayerInput>();
-	view.each([state](auto& playerInput) {
-		playerInput.mRightSpeed = 0.0f;
-		playerInput.mDownSpeed = 0.0f;
 
-		if (state[SDL_SCANCODE_D])
-		{
-			playerInput.mRightSpeed += 250.0f;
-		}
-
-		if (state[SDL_SCANCODE_A])
-		{
-			playerInput.mRightSpeed -= 250.0f;
-		}
-
-		if (state[SDL_SCANCODE_S])
-		{
-			playerInput.mDownSpeed += 300.0f;
-		}
-
-		if (state[SDL_SCANCODE_W])
-		{
-			playerInput.mDownSpeed -= 300.0f;
-		}
-	});
-  */
+	UpdateInputSystem(registry, state);
 }
 
 void UpdateGame(GameData* gd, entt::registry* registry)
@@ -126,6 +101,7 @@ void UpdateGame(GameData* gd, entt::registry* registry)
 
   RunAnimationSystem(registry, deltaTime);
   UpdateBackGroundSprites(registry, deltaTime);
+  UpdateInput(registry, deltaTime);
 }
 
 void GenerateOutput(GameData* gd, entt::registry* registry)
@@ -161,7 +137,7 @@ SDL_Texture* GetTexture(const std::string& fileName, SDL_Renderer* renderer)
 		SDL_FreeSurface(surf);
 		if (!tex)
 		{
-			SDL_Log("Failed to convert surfave to texture for %s", fileName.c_str());
+			SDL_Log("Failed to convert surface to texture for %s", fileName.c_str());
 			return nullptr;
 		}
 
@@ -180,15 +156,60 @@ void LoadData(GameData* gd, entt::registry* registry)
 	SetFrame(frameEntity, 4, GetTexture("Assets/Ship04.png", gd->renderer));
 
 	registry->emplace<Position>(ship, 100.0f, 384.0f);
-	registry->emplace<Sprite>(ship, nullptr, 100,0,0, 1.5f); // SDL_QueryTexture gets the width and height 
+	// SDL_QueryTexture gets the width and height 
+	registry->emplace<Sprite>(ship, nullptr, 100,0,0, 1.5f); 
 	registry->emplace<AnimatedSprite>(ship, frameEntity,  4, 24.0f, 0.0f);
 	registry->emplace<Input>(ship, 0.0f,0.0f);
+
+	auto scrollingBackgroundStars1 = registry->create();
+	registry->emplace<BGSprite>(
+		scrollingBackgroundStars1,
+		GetTexture("Assets/Stars.png", gd->renderer),
+		0.0f,
+		0.0f,
+		1024.0f,
+		768.0f,
+		-200.0f
+	);
+	registry->emplace<Position>(scrollingBackgroundStars1, 512.0f, 384.0f);
+
+	auto scrollingBackgroundStars2 = registry->create();
+	registry->emplace<BGSprite>(
+		scrollingBackgroundStars2,
+		GetTexture("Assets/Stars.png", gd->renderer),
+		1024.0f,
+		0.0f,
+		1024.0f,
+		768.0f,
+		-200.0f
+	);
+	registry->emplace<Position>(scrollingBackgroundStars2, 512.0f, 384.0f);
+
 	auto scrollingBackground1 = registry->create();
-	registry->emplace<BGSprite>(scrollingBackground1, GetTexture("Assets/Farback01.png", gd->renderer), 0.0f, 0.0f, 1024.0f, 768.0f, -100.0f);
+	registry->emplace<BGSprite>(
+		scrollingBackground1, 
+		GetTexture("Assets/Farback01.png", gd->renderer), 
+		0.0f, 
+		0.0f, 
+		1024.0f, 
+		768.0f, 
+		-100.0f
+	);
 	registry->emplace<Position>(scrollingBackground1, 512.0f, 384.0f);
+
 	auto scrollingBackground2 = registry->create();
-	registry->emplace<BGSprite>(scrollingBackground2, GetTexture("Assets/Farback02.png", gd->renderer), 1024.0f, 0.0f, 1024.0f, 768.0f, -100.0f);
+	registry->emplace<BGSprite>(
+		scrollingBackground2, 
+		GetTexture("Assets/Farback02.png", gd->renderer), 
+		1024.0f, 
+		0.0f, 
+		1024.0f, 
+		768.0f, 
+		-100.0f
+	);
 	registry->emplace<Position>(scrollingBackground2, 512.0f, 384.0f);
+
+	
 }
 
 void UnloadData(GameData* gd)
