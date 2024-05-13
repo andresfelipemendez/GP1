@@ -12,12 +12,12 @@ namespace Math
 
 	inline float ToDegrees(float radians)
 	{
-		return radians * 180.0f / Pi;
+		return (radians * 180.0f) / Pi;
 	}
 
 	inline bool NearZero(float val, float epsilon = 0.001f)
 	{
-		if (fabs(val <= epsilon))
+		if (fabs(val) <= epsilon)
 		{
 			return true;
 		}

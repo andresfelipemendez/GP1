@@ -20,6 +20,9 @@ public:
 	void UpdateComponents(float deltaTime);
 
 	virtual void UpdateActor(float deltaTime);
+	
+	void ProcessInput(const uint8_t* keyState);
+	virtual void ActorInput(const uint8_t* keyState);
 
 	void AddComponent(class Component* components);
 	void RemoveComponent(class Component* component);

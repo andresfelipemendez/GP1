@@ -140,6 +140,8 @@
     <ClCompile Include="CircleComponent.cpp" />
     <ClCompile Include="Component.cpp" />
     <ClCompile Include="Game.cpp" />
+    <ClCompile Include="InputComponent.cpp" />
+    <ClCompile Include="Laser.cpp" />
     <ClCompile Include="Math.cpp" />
     <ClCompile Include="MoveComponent.cpp" />
     <ClCompile Include="Random.cpp" />
@@ -155,6 +157,8 @@
     <ClInclude Include="CircleComponent.h" />
     <ClInclude Include="Component.h" />
     <ClInclude Include="Game.h" />
+    <ClInclude Include="InputComponent.h" />
+    <ClInclude Include="Laser.h" />
     <ClInclude Include="Math.h" />
     <ClInclude Include="MoveComponent.h" />
     <ClInclude Include="Random.h" />

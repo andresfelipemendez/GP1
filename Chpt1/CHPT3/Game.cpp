@@ -91,7 +91,12 @@ void Game::ProcessInput()
 		mIsRunning = false;
 	}
 
-	mShip->ProcessKeyboard(state);
+	mUpdatingActors = true;
+	for (auto actor : mActors)
+	{
+		actor->ProcessInput(state);
+	}
+	mUpdatingActors = false;
 }
 
 void Game::UpdateGame()

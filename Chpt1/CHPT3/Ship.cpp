@@ -1,70 +1,31 @@
 #include "Ship.h"
 #include "AnimSpriteComponent.h"
+#include "InputComponent.h"
 #include "Game.h"
+#include "Laser.h"
 
 Ship::Ship(Game* game) :
-	Actor(game) ,
-	mRightSpeed(0.0f),
-	mDownSpeed(0.0f)
+	Actor(game),
+	mLaserCooldown(0.0f)
 {
-	AnimSpriteComponent* asc = new AnimSpriteComponent(this);
-	std::vector<SDL_Texture*> anims = {
-		game->GetTexture("Assets/Ship01.png"),
-		game->GetTexture("Assets/Ship02.png"),
-		game->GetTexture("Assets/Ship03.png"),
-		game->GetTexture("Assets/Ship04.png")
-	};
-	asc->SetAnimTexture(anims);
+	SpriteComponent* sc = new SpriteComponent(this, 150);
+	sc->SetTexture(game->GetTexture("Assets/Ship.png"));
+	 
+	InputComponent* ic = new InputComponent(this);
+	ic->mForwardKey = SDL_SCANCODE_W;
+	ic->mBackKey = SDL_SCANCODE_S;
+	ic->mClockwiseKey = SDL_SCANCODE_A;
+	ic->mCounterClockwiseKey = SDL_SCANCODE_D;
+	ic->mMaxForwardSpeed = 300.0f;
+	ic->mMaxAngularSpeed = Math::TwoPi;
 }
 
 void Ship::UpdateActor(float deltaTime)
 {
-	Actor::UpdateActor(deltaTime);
-
-	Vector2 pos = mPosition;
-	pos.x += mRightSpeed * deltaTime;
-	pos.y += mDownSpeed * deltaTime;
-
-	if (pos.x < 25.0f) {
-		pos.x = 25.0f;
-	}
-	else if (pos.x > 500.0f)
-	{
-		pos.x = 500.0f;
-	}
-
-	if (pos.y < 25.0f) {
-		pos.y = 25.0f;
-	}
-	else if (pos.y > 743.0f) {
-		pos.y = 743.0f;
-	}
-	mPosition = pos;
+	mLaserCooldown -= deltaTime;
 
 }
 
-void Ship::ProcessKeyboard(const uint8_t* state)
-{
-	mRightSpeed = 0.0f;
-	mDownSpeed = 0.0f;
+void Ship::ActorInput(const uint8_t* keyState) {
 
-	if (state[SDL_SCANCODE_D])
-	{
-		mRightSpeed += 250.0f;
-	}
-
-	if (state[SDL_SCANCODE_A])
-	{
-		mRightSpeed -= 250.0f;
-	}
-
-	if (state[SDL_SCANCODE_S])
-	{
-		mDownSpeed += 300.0f;
-	}
-
-	if (state[SDL_SCANCODE_W])
-	{
-		mDownSpeed -= 300.0f;
-	}
 }

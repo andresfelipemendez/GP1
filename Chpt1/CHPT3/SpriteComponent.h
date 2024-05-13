@@ -10,9 +10,10 @@ public:
 	virtual void SetTexture(SDL_Texture* renderer);
 
 //protected:
-	SDL_Texture* mTexture;
 	int mDrawOrder;
 	int mTextWidth;
 	int mTextHeight;
+protected:
+	SDL_Texture* mTexture;
 };
 

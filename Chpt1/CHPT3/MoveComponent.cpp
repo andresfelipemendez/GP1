@@ -35,6 +35,6 @@ void MoveComponent::Update(float deltaTime)
 		else if (pos.y > 768) {
 			pos.y = 2.0f;
 		}
-
+		mOwner->mPosition = pos;
 	}
 }

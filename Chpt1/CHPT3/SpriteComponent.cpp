@@ -19,6 +19,7 @@ SpriteComponent::~SpriteComponent()
 
 void SpriteComponent::Draw(SDL_Renderer* renderer)
 {
+
 	if (mTexture)
 	{
 		SDL_Rect r;
