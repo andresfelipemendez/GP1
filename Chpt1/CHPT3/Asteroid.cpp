@@ -27,4 +27,5 @@ Asteroid::Asteroid(Game* game) : Actor(game), mCircle(nullptr)
 
 Asteroid::~Asteroid()
 {
+	mGame->RemoveAsteroid(this);
 }
