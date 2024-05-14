@@ -9,14 +9,24 @@ struct Sprite
 	float scale;
 };
 
+// this is a transform now?
 struct Position
 {
 	float x;
 	float y;
+	float rot;
+};
+
+struct Move {
+	float angularSpeed;
+	float forwardSpeed;
 };
 
 struct Input {
-	float velX;
-	float velY;
-
+	float maxFwdSpeed;
+	float maxAngSpeed;
+	int forwardKey;
+	int backKey;
+	int clockwiseKey;
+	int counterClockwiseKey;
 };

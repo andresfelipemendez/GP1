@@ -1,7 +1,7 @@
 #include "Game.h"
 #include <SDL_image.h>
 #include "Components.h"
-
+#include "Math.h"
 #include <SDL.h>
 #include "Systems.h"
 
@@ -151,8 +151,16 @@ void LoadData(GameData* gd, entt::registry* registry)
 	int width, height;
 	SDL_QueryTexture(tex, nullptr, nullptr, &width, &height);
 
+	registry->emplace<Move>(ship, 0.0f, 0.0f);
 	registry->emplace<Sprite>(ship, tex, 100, width, height, 1.0f);
-	registry->emplace<Input>(ship, 0.0f, 0.0f);
+
+	auto& inp = registry->emplace<Input>(ship);
+	inp.maxFwdSpeed = 300.0f;
+	inp.maxAngSpeed = Math::TwoPi;
+	inp.forwardKey = SDL_SCANCODE_W;
+	inp.backKey = SDL_SCANCODE_S;
+	inp.clockwiseKey = SDL_SCANCODE_A;
+	inp.counterClockwiseKey = SDL_SCANCODE_D;
 
 	const int numAsteroids = 20;
 	for (int i = 0; i < numAsteroids; i++) {
