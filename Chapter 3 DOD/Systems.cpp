@@ -5,9 +5,9 @@
 
 void ShootingSystem(entt::registry* registry, SDL_Renderer* renderer,const Uint8* keyState)
 {
-    auto shooter = registry->view<const Shoot, const Position>();
-    shooter.each([registry, renderer, keyState](const Shoot& shoot, const Position& pos) {
-        if (keyState[shoot.shootKey])
+    auto shooter = registry->view<Shoot, const Position>();
+    shooter.each([registry, renderer, keyState](Shoot shoot, const Position& pos) {
+        if (keyState[shoot.shootKey] && shoot.shootCooldown <= 0.0f)
         {
             auto laser = registry->create();
             registry->emplace<Laser>(laser, 1.0f, 11.0f);
@@ -17,21 +17,49 @@ void ShootingSystem(entt::registry* registry, SDL_Renderer* renderer,const Uint8
             int width, height;
             SDL_QueryTexture(tex, nullptr, nullptr, &width, &height);
             registry->emplace<Sprite>(laser, tex, 100, width, height, 1.0f);
+            shoot.shootCooldown = 5.5f;
         }
     });
 }
 
 void CollisionSystem(entt::registry* registry, float deltaTime)
 {
+    registry->view <Shoot>().each([deltaTime](Shoot& shoot) {
+        shoot.shootCooldown -= deltaTime;
+    });
+
     auto laserBeams = registry->view<Laser>();
     laserBeams.each([registry, deltaTime](const auto entity, Laser& laser) {
         laser.life -= deltaTime;
         if (laser.life < 0.0f)
         {
-            registry->destroy(entity);
-            return;
+            registry->emplace<DestroyTag>(entity);
         }
     });
+
+    auto laserBeamsCollision = registry->view<const Laser, const Position>();
+    auto asteroidCollision = registry->view<const Circle, const Position>();
+
+    for (auto [laserEntity, laser, laserPos] : laserBeamsCollision.each()) {
+        // ...
+        for (auto [astEntity, circle, astPos] : asteroidCollision.each()) {
+            // ...
+            Vector2 diff = Vector2(laserPos.x, laserPos.y) - Vector2(astPos.x, astPos.y);
+            float distSq = diff.LengthSq();
+
+
+            float radiiSq = laser.radius + circle.radius;
+            radiiSq *= radiiSq;
+            if (distSq <= radiiSq)
+            {
+                registry->emplace_or_replace<DestroyTag>(laserEntity);
+                registry->emplace_or_replace<DestroyTag>(astEntity);
+            }
+        }
+    }
+
+    auto destroyEntities = registry->view<const DestroyTag>();
+    registry->destroy(destroyEntities.begin(), destroyEntities.end());
 }
 
 void InputSystem(entt::registry* registry,const Uint8* keyState)

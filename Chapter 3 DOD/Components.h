@@ -22,6 +22,10 @@ struct Shoot {
 	float shootCooldown;
 };
 
+struct DestroyTag {
+
+};
+
 struct Laser {
 	float life;
 	float radius;
