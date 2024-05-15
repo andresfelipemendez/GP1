@@ -4,6 +4,7 @@
 #include "Math.h"
 #include <SDL.h>
 #include "Systems.h"
+#include "Random.h"
 
 bool Initialize(GameData* gd, entt::registry* registry)
 {
@@ -39,6 +40,8 @@ bool Initialize(GameData* gd, entt::registry* registry)
 		SDL_Log("Unable to initialize SDL_image: %s", SDL_GetError());
 		return false;
 	}
+
+	Random::Init();
 
 	LoadData(gd, registry);
 
@@ -80,13 +83,12 @@ void ProcessInput(GameData* gd, entt::registry* registry)
 		gd->isRunning = false;
 	}
 
-
 	InputSystem(registry, state);
+	ShootingSystem(registry, gd->renderer, state);
 }
 
 void UpdateGame(GameData* gd, entt::registry* registry)
 {
-	//InputSystemUpdate();
 	while (!SDL_TICKS_PASSED(SDL_GetTicks(), gd->ticksCount + 16))
 		;
 
@@ -98,6 +100,7 @@ void UpdateGame(GameData* gd, entt::registry* registry)
 	gd->ticksCount = SDL_GetTicks();
 
 	MovementSystem(registry, deltaTime);
+	CollisionSystem(registry, deltaTime);
 }
 
 void GenerateOutput(GameData* gd, entt::registry* registry)
@@ -106,7 +109,6 @@ void GenerateOutput(GameData* gd, entt::registry* registry)
 	SDL_RenderClear(gd->renderer);
 
 	RenderSystem(gd->renderer, registry);
-
 
 	SDL_RenderPresent(gd->renderer);
 }
@@ -162,9 +164,31 @@ void LoadData(GameData* gd, entt::registry* registry)
 	inp.clockwiseKey = SDL_SCANCODE_A;
 	inp.counterClockwiseKey = SDL_SCANCODE_D;
 
+	registry->emplace<Shoot>(ship, SDL_SCANCODE_SPACE, 0.5f);
+
 	const int numAsteroids = 20;
 	for (int i = 0; i < numAsteroids; i++) {
 
+		auto asteroid = registry->create();
+		SDL_Texture* tex = GetTexture("Assets/Asteroid.png", gd->renderer);
+		int width, height;
+		SDL_QueryTexture(tex, nullptr, nullptr, &width, &height);
+
+		registry->emplace<Sprite>(asteroid, tex, 100, width, height, 1.0f);
+
+		Vector2 randPos = Random::GetVector(
+			Vector2::Zero,
+			Vector2(1024.0f, 768.0f)
+		);
+
+		auto& pos = registry->emplace<Position>(asteroid);
+		pos.x = randPos.x;
+		pos.y = randPos.y;
+		pos.rot = Random::GetFloatRange(0.0f, Math::TwoPi);
+
+		registry->emplace<Move>(asteroid, 0.0f, 150.0f);
+
+		registry->emplace<Circle>(asteroid, 40.0f);
 	}
 
 }

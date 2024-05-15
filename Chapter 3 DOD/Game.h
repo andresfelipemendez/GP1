@@ -19,3 +19,6 @@ void UpdateGame(GameData* gd, entt::registry* registry);
 void GenerateOutput(GameData* gd, entt::registry* registry);
 void LoadData(GameData* gd, entt::registry* registry);
 void UnloadData(GameData* gd);
+ 
+
+SDL_Texture* GetTexture(const std::string& fileName, SDL_Renderer* renderer);

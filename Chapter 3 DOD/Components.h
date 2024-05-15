@@ -17,9 +17,23 @@ struct Position
 	float rot;
 };
 
+struct Shoot {
+	int shootKey;
+	float shootCooldown;
+};
+
+struct Laser {
+	float life;
+	float radius;
+};
+
 struct Move {
 	float angularSpeed;
 	float forwardSpeed;
+};
+
+struct Circle {
+	float radius;
 };
 
 struct Input {

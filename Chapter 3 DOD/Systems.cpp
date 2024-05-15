@@ -1,6 +1,39 @@
 #include "Systems.h"
 #include "Components.h"
 #include "Math.h"
+#include "Game.h"
+
+void ShootingSystem(entt::registry* registry, SDL_Renderer* renderer,const Uint8* keyState)
+{
+    auto shooter = registry->view<const Shoot, const Position>();
+    shooter.each([registry, renderer, keyState](const Shoot& shoot, const Position& pos) {
+        if (keyState[shoot.shootKey])
+        {
+            auto laser = registry->create();
+            registry->emplace<Laser>(laser, 1.0f, 11.0f);
+            registry->emplace<Position>(laser, pos.x, pos.y, pos.rot);
+            registry->emplace<Move>(laser, 0.0f, 800.0f);
+            SDL_Texture* tex = GetTexture("Assets/Laser.png", renderer);
+            int width, height;
+            SDL_QueryTexture(tex, nullptr, nullptr, &width, &height);
+            registry->emplace<Sprite>(laser, tex, 100, width, height, 1.0f);
+        }
+    });
+}
+
+void CollisionSystem(entt::registry* registry, float deltaTime)
+{
+    auto laserBeams = registry->view<Laser>();
+    laserBeams.each([registry, deltaTime](const auto entity, Laser& laser) {
+        laser.life -= deltaTime;
+        if (laser.life < 0.0f)
+        {
+            registry->destroy(entity);
+            return;
+        }
+    });
+}
+
 void InputSystem(entt::registry* registry,const Uint8* keyState)
 {
     auto input = registry->view<const Input, Move>();
