@@ -6,8 +6,8 @@
 void ShootingSystem(entt::registry* registry, SDL_Renderer* renderer,const Uint8* keyState)
 {
     auto shooter = registry->view<Shoot, const Position>();
-    shooter.each([registry, renderer, keyState](Shoot shoot, const Position& pos) {
-        if (keyState[shoot.shootKey] && shoot.shootCooldown <= 0.0f)
+    shooter.each([registry, renderer, keyState](Shoot& shoot, const Position& pos) {
+        if (keyState[shoot.shootKey] && shoot.shootCooldown < 0.0f)
         {
             auto laser = registry->create();
             registry->emplace<Laser>(laser, 1.0f, 11.0f);
@@ -17,7 +17,7 @@ void ShootingSystem(entt::registry* registry, SDL_Renderer* renderer,const Uint8
             int width, height;
             SDL_QueryTexture(tex, nullptr, nullptr, &width, &height);
             registry->emplace<Sprite>(laser, tex, 100, width, height, 1.0f);
-            shoot.shootCooldown = 5.5f;
+            shoot.shootCooldown = 0.5f;
         }
     });
 }
