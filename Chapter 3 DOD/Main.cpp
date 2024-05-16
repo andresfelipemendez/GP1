@@ -7,7 +7,6 @@
 int main(int argc, char* argv[])
 {
     GameData gameData;
-    
     SpriteData spriteData;
     TransformData transformData;
     MoveData moveData;
@@ -29,7 +28,7 @@ int main(int argc, char* argv[])
     );
 
     if (success) {
-        RunLoop(gameData, spriteData, transformData);
+        RunLoop(gameData, spriteData, transformData, moveData, inputData, laserData, circleData);
     }
    // ShutDown(&gameData);
 

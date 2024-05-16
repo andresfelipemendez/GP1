@@ -4,8 +4,8 @@
 #include "Components.h"
 #include "Game.h"
 
-void ProcessInput(GameData& gd, const Uint8* state, MoveData& moveData, InputData& inputData);
-
+void ProcessInput(const Uint8* state, MoveData& moveData, InputData& inputData);
+void UpdateGame(TransformData& transformData, MoveData& moveData, LaserData& laserData, CircleData& circleData, float deltaTime);
 void RenderGame(SDL_Renderer* renderer, const SpriteData& spriteData, const TransformData& transformData);
 /*
 void ShootingSystem(entt::registry* registry, SDL_Renderer* renderer, const Uint8* keyState);

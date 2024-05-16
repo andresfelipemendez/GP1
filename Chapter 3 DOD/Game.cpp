@@ -52,11 +52,11 @@ bool InitializeGame(GameData& gd, SpriteData& spriteData, TransformData& transfo
 	gd.isRunning = true;
 	return true;
 }
-void RunLoop(GameData& gd, SpriteData& spriteData, TransformData& transformData)
+void RunLoop(GameData& gd, SpriteData& spriteData, TransformData& transformData, MoveData& moveData, InputData& inputData, LaserData& laserData, CircleData& circleData)
 {
 	while (gd.isRunning) {
-		/*ProcessInput(gd, registry);
-		UpdateGame(gd, registry);*/
+		Input(gd, moveData, inputData);
+		Update(gd, transformData, moveData, laserData, circleData);
 		GenerateOutput(gd, spriteData, transformData);
 	}
 }
@@ -65,7 +65,7 @@ void ShutDown(GameData* gd)
 {
 }
 
-void ProcessInput(GameData* gd)
+void Input(GameData& gd, MoveData& moveData, InputData& inputData)
 {
 	SDL_Event event;
 	while (SDL_PollEvent(&event))
@@ -73,7 +73,7 @@ void ProcessInput(GameData* gd)
 		switch (event.type)
 		{
 		case SDL_QUIT:
-			gd->isRunning = false;
+			gd.isRunning = false;
 			break;
 		default:
 			break;
@@ -83,35 +83,35 @@ void ProcessInput(GameData* gd)
 	const Uint8* state = SDL_GetKeyboardState(NULL);
 	if (state[SDL_SCANCODE_ESCAPE])
 	{
-		gd->isRunning = false;
+		gd.isRunning = false;
 	}
 
-	/*InputSystem(registry, state);
-	ShootingSystem(registry, gd->renderer, state);*/
+	ProcessInput(state, moveData, inputData);
+	/*ShootingSystem(registry, gd->renderer, state);*/
 }
 
-void UpdateGame(GameData* gd)
+void Update(GameData& gd, TransformData& transformData, MoveData& moveData,
+	LaserData& laserData, CircleData& circleData)
 {
-	while (!SDL_TICKS_PASSED(SDL_GetTicks(), gd->ticksCount + 16))
+	while (!SDL_TICKS_PASSED(SDL_GetTicks(), gd.ticksCount + 16))
 		;
 
-	float deltaTime = (SDL_GetTicks() - gd->ticksCount) / 1000.0f;
+	float deltaTime = (SDL_GetTicks() - gd.ticksCount) / 1000.0f;
 	if (deltaTime > 0.05f)
 	{
 		deltaTime = 0.05f;
 	}
-	gd->ticksCount = SDL_GetTicks();
+	gd.ticksCount = SDL_GetTicks();
 
-	/*MovementSystem(registry, deltaTime);
-	CollisionSystem(registry, deltaTime);*/
+	UpdateGame(transformData, moveData, laserData, circleData, deltaTime);
 }
 
-void GenerateOutput(GameData& gd, SpriteData& spriteData, TransformData& trasnformData)
+void GenerateOutput(GameData& gd, SpriteData& spriteData, TransformData& transformData)
 {
 	SDL_SetRenderDrawColor(gd.renderer, 0, 0, 0, 255);
 	SDL_RenderClear(gd.renderer);
 
-	RenderGame(gd.renderer, spriteData, trasnformData);
+	RenderGame(gd.renderer, spriteData, transformData);
 
 	SDL_RenderPresent(gd.renderer);
 }
