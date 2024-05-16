@@ -2,19 +2,36 @@
 
 #include "Game.h"
 
-#include <entt/entt.hpp>
+#include "Components.h"
 
 int main(int argc, char* argv[])
 {
     GameData gameData;
+    
+    SpriteData spriteData;
+    TransformData transformData;
+    MoveData moveData;
+    InputData inputData;
+    ShootData shootData;
+    LaserData laserData;
+    CircleData circleData;
+    EntityIndices entityIndices;
 
-    entt::registry registry;
+    bool success = InitializeGame(
+        gameData, 
+        spriteData, 
+        transformData,
+        moveData,
+        inputData,
+        shootData,
+        circleData,
+        entityIndices
+    );
 
-    bool success = Initialize(&gameData, &registry);
     if (success) {
-        RunLoop(&gameData, &registry);
+        RunLoop(gameData, spriteData, transformData);
     }
-    ShutDown(&gameData);
+   // ShutDown(&gameData);
 
     return 0;
 }

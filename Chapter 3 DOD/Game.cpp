@@ -5,15 +5,18 @@
 #include <SDL.h>
 #include "Systems.h"
 #include "Random.h"
+#include <unordered_map>
 
-bool Initialize(GameData* gd, entt::registry* registry)
+bool InitializeGame(GameData& gd, SpriteData& spriteData, TransformData& transformData,
+	MoveData& moveData, InputData& inputData, ShootData& shootData,
+	CircleData& circleData, EntityIndices& entityIndices)
 {
 	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) != 0) {
 		SDL_Log("Unable to initialize SDL: %s", SDL_GetError());
 		return false;
 	}
 
-	gd->window = SDL_CreateWindow(
+	gd.window = SDL_CreateWindow(
 		"Game Programming in C++ (Chapter 2)",
 		100,
 		100,
@@ -21,17 +24,17 @@ bool Initialize(GameData* gd, entt::registry* registry)
 		768,
 		0
 	);
-	if (!gd->window) {
+	if (!gd.window) {
 		SDL_Log("Failed to create window: %s", SDL_GetError());
 		return false;
 	}
 
-	gd->renderer = SDL_CreateRenderer(
-		gd->window,
+	gd.renderer = SDL_CreateRenderer(
+		gd.window,
 		-1,
 		SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC
 	);
-	if (!gd->renderer) {
+	if (!gd.renderer) {
 		SDL_Log("Failed to create renderer: %s", SDL_GetError());
 		return false;
 	}
@@ -43,18 +46,18 @@ bool Initialize(GameData* gd, entt::registry* registry)
 
 	Random::Init();
 
-	LoadData(gd, registry);
+	LoadData(gd, spriteData, transformData, moveData, inputData, shootData, circleData, entityIndices);
 
-	gd->ticksCount = SDL_GetTicks();
-	gd->isRunning = true;
+	gd.ticksCount = SDL_GetTicks();
+	gd.isRunning = true;
 	return true;
 }
-void RunLoop(GameData* gd, entt::registry* registry)
+void RunLoop(GameData& gd, SpriteData& spriteData, TransformData& transformData)
 {
-	while (gd->isRunning) {
-		ProcessInput(gd, registry);
-		UpdateGame(gd, registry);
-		GenerateOutput(gd, registry);
+	while (gd.isRunning) {
+		/*ProcessInput(gd, registry);
+		UpdateGame(gd, registry);*/
+		GenerateOutput(gd, spriteData, transformData);
 	}
 }
 
@@ -62,7 +65,7 @@ void ShutDown(GameData* gd)
 {
 }
 
-void ProcessInput(GameData* gd, entt::registry* registry)
+void ProcessInput(GameData* gd)
 {
 	SDL_Event event;
 	while (SDL_PollEvent(&event))
@@ -83,11 +86,11 @@ void ProcessInput(GameData* gd, entt::registry* registry)
 		gd->isRunning = false;
 	}
 
-	InputSystem(registry, state);
-	ShootingSystem(registry, gd->renderer, state);
+	/*InputSystem(registry, state);
+	ShootingSystem(registry, gd->renderer, state);*/
 }
 
-void UpdateGame(GameData* gd, entt::registry* registry)
+void UpdateGame(GameData* gd)
 {
 	while (!SDL_TICKS_PASSED(SDL_GetTicks(), gd->ticksCount + 16))
 		;
@@ -99,18 +102,18 @@ void UpdateGame(GameData* gd, entt::registry* registry)
 	}
 	gd->ticksCount = SDL_GetTicks();
 
-	MovementSystem(registry, deltaTime);
-	CollisionSystem(registry, deltaTime);
+	/*MovementSystem(registry, deltaTime);
+	CollisionSystem(registry, deltaTime);*/
 }
 
-void GenerateOutput(GameData* gd, entt::registry* registry)
+void GenerateOutput(GameData& gd, SpriteData& spriteData, TransformData& trasnformData)
 {
-	SDL_SetRenderDrawColor(gd->renderer, 0, 0, 0, 255);
-	SDL_RenderClear(gd->renderer);
+	SDL_SetRenderDrawColor(gd.renderer, 0, 0, 0, 255);
+	SDL_RenderClear(gd.renderer);
 
-	RenderSystem(gd->renderer, registry);
+	RenderGame(gd.renderer, spriteData, trasnformData);
 
-	SDL_RenderPresent(gd->renderer);
+	SDL_RenderPresent(gd.renderer);
 }
 
 std::unordered_map<std::string, SDL_Texture*> mTextures;
@@ -145,52 +148,54 @@ SDL_Texture* GetTexture(const std::string& fileName, SDL_Renderer* renderer)
 	return tex;
 }
 
-void LoadData(GameData* gd, entt::registry* registry)
+void LoadData(GameData& gd, SpriteData& spriteData, TransformData& transformData,
+	MoveData& moveData, InputData& inputData, ShootData& shootData,
+	CircleData& circleData, EntityIndices& entityIndices)
 {
-	auto ship = registry->create();
-	registry->emplace<Position>(ship, 100.0f, 384.0f);
-	SDL_Texture* tex = GetTexture("Assets/Ship.png", gd->renderer);
+	SDL_Texture* shipTex = GetTexture("Assets/Ship.png", gd.renderer);
 	int width, height;
-	SDL_QueryTexture(tex, nullptr, nullptr, &width, &height);
+	SDL_QueryTexture(shipTex, nullptr, nullptr, &width, &height);
 
-	registry->emplace<Move>(ship, 0.0f, 0.0f);
-	registry->emplace<Sprite>(ship, tex, 100, width, height, 1.0f);
+	transformData.pos.push_back({ 100.0f,384.0f });
+	transformData.rot.push_back(0.0f);
 
-	auto& inp = registry->emplace<Input>(ship);
-	inp.maxFwdSpeed = 300.0f;
-	inp.maxAngSpeed = Math::TwoPi;
-	inp.forwardKey = SDL_SCANCODE_W;
-	inp.backKey = SDL_SCANCODE_S;
-	inp.clockwiseKey = SDL_SCANCODE_A;
-	inp.counterClockwiseKey = SDL_SCANCODE_D;
+	spriteData.textures.push_back(shipTex);
+	spriteData.texWidths.push_back(width);
+	spriteData.texHeights.push_back(height);
 
-	registry->emplace<Shoot>(ship, SDL_SCANCODE_SPACE, 0.5f);
+	moveData.angularSpeed.push_back(0.0f);
+	moveData.forwardSpeed.push_back(0.0f);
+
+	inputData.forwardKey = SDL_SCANCODE_W;
+	inputData.backKey = SDL_SCANCODE_S;
+	inputData.clockwiseKey = SDL_SCANCODE_A;
+	inputData.counterClockwiseKey = SDL_SCANCODE_D;
+
+	shootData.shootKey = SDL_SCANCODE_SPACE;
+	shootData.shootCooldown = 0.5f;
+
+	entityIndices.shipIndex = 0;
 
 	const int numAsteroids = 20;
-	for (int i = 0; i < numAsteroids; i++) {
+	for (int i = 0; i < numAsteroids; ++i) {
+		SDL_Texture* asteroidTex = GetTexture("Assets/Asteroid.png", gd.renderer);
+		SDL_QueryTexture(asteroidTex, nullptr, nullptr, &width, &height);
 
-		auto asteroid = registry->create();
-		SDL_Texture* tex = GetTexture("Assets/Asteroid.png", gd->renderer);
-		int width, height;
-		SDL_QueryTexture(tex, nullptr, nullptr, &width, &height);
+		spriteData.textures.push_back(asteroidTex);
+		spriteData.texWidths.push_back(width);
+		spriteData.texHeights.push_back(height);
 
-		registry->emplace<Sprite>(asteroid, tex, 100, width, height, 1.0f);
+		Vector2 randPos = Random::GetVector(Vector2::Zero, Vector2(1024.0f, 768.0f));
+		transformData.pos.push_back({ randPos.x,randPos.y });
+		transformData.rot.push_back(Random::GetFloatRange(0.0f, Math::TwoPi));
 
-		Vector2 randPos = Random::GetVector(
-			Vector2::Zero,
-			Vector2(1024.0f, 768.0f)
-		);
+		moveData.angularSpeed.push_back(0.0f);
+		moveData.forwardSpeed.push_back(150.0f);
 
-		auto& pos = registry->emplace<Position>(asteroid);
-		pos.x = randPos.x;
-		pos.y = randPos.y;
-		pos.rot = Random::GetFloatRange(0.0f, Math::TwoPi);
+		circleData.radius.push_back(40.0f);
 
-		registry->emplace<Move>(asteroid, 0.0f, 150.0f);
-
-		registry->emplace<Circle>(asteroid, 40.0f);
+		entityIndices.asteroidIndices.push_back(i + 1); // Ship is at 0, asteroids start at 1
 	}
-
 }
 
 void UnloadData(GameData* gd)
