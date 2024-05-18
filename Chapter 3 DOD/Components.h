@@ -45,8 +45,16 @@ struct EntityIndices {
     int shipIndex;
     std::vector<int> asteroidIndices;
     std::vector<int> laserIndices;
+    std::vector<int> destroyIndices;
 };
 
 struct Registry {
-    EntityIndices entityIndices;
+    SpriteData& spriteData;
+    TransformData& transformData;
+    MoveData& moveData;
+    InputData& inputData;
+    LaserData& lasers;
+    CircleData& circleData;
+    ShootData& shootData;
+    EntityIndices& entityIndices;
 };

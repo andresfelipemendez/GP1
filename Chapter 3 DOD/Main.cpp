@@ -16,19 +16,24 @@ int main(int argc, char* argv[])
     CircleData circleData;
     EntityIndices entityIndices;
 
-    bool success = InitializeGame(
-        gameData, 
-        spriteData, 
+    Registry registry{
+        spriteData,
         transformData,
         moveData,
         inputData,
-        shootData,
+        laserData,
         circleData,
+        shootData,
         entityIndices
+    };
+
+    bool success = InitializeGame(
+        gameData, 
+        registry
     );
 
     if (success) {
-        RunLoop(gameData, spriteData, transformData, moveData, inputData, laserData, circleData);
+        RunLoop(gameData, registry);
     }
    // ShutDown(&gameData);
 

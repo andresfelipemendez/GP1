@@ -10,23 +10,21 @@ struct GameData {
 	bool isRunning = false;
 };
 
-bool InitializeGame(GameData& gd, SpriteData& spriteData, TransformData& transformData,
-	MoveData& moveData, InputData& inputData, ShootData& shootData,
-	CircleData& circleData, EntityIndices& entityIndices);
+bool InitializeGame(GameData& gd, Registry& r);
 
-void LoadData(GameData& gd, SpriteData& spriteData, TransformData& transformData,
-	MoveData& moveData, InputData& inputData, ShootData& shootData,
-	CircleData& circleData, EntityIndices& entityIndices);
+void LoadData(GameData& gd, Registry& r);
 
 
-void RunLoop(GameData& gd, SpriteData& spriteData, TransformData& transformData, MoveData& moveData, InputData& inputData, LaserData& laserData, CircleData& circleData);
+void RunLoop(GameData& gd, Registry& r);
 
 
-void Input(GameData& gd, MoveData& moveData, InputData& inputData);
-void Update(GameData& gd, TransformData& transformData, MoveData& moveData,
-	LaserData& laserData, CircleData& circleData);
+void Input(GameData& gd, Registry& r);
 
-void GenerateOutput(GameData& gd, SpriteData& spriteData, TransformData& trasnformData);
+void Update(GameData& gd, Registry& r);
+
+void GenerateOutput(GameData& gd, Registry& r);
  
-
-SDL_Texture* GetTexture(const std::string& fileName, SDL_Renderer* renderer);
+SDL_Texture* GetTexture(
+	const std::string& fileName, 
+	SDL_Renderer* renderer
+);

@@ -7,9 +7,7 @@
 #include "Random.h"
 #include <unordered_map>
 
-bool InitializeGame(GameData& gd, SpriteData& spriteData, TransformData& transformData,
-	MoveData& moveData, InputData& inputData, ShootData& shootData,
-	CircleData& circleData, EntityIndices& entityIndices)
+bool InitializeGame(GameData& gd, Registry& r)
 {
 	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) != 0) {
 		SDL_Log("Unable to initialize SDL: %s", SDL_GetError());
@@ -46,18 +44,18 @@ bool InitializeGame(GameData& gd, SpriteData& spriteData, TransformData& transfo
 
 	Random::Init();
 
-	LoadData(gd, spriteData, transformData, moveData, inputData, shootData, circleData, entityIndices);
+	LoadData(gd, r);
 
 	gd.ticksCount = SDL_GetTicks();
 	gd.isRunning = true;
 	return true;
 }
-void RunLoop(GameData& gd, SpriteData& spriteData, TransformData& transformData, MoveData& moveData, InputData& inputData, LaserData& laserData, CircleData& circleData)
+void RunLoop(GameData& gd, Registry& r)
 {
 	while (gd.isRunning) {
-		Input(gd, moveData, inputData);
-		Update(gd, transformData, moveData, laserData, circleData);
-		GenerateOutput(gd, spriteData, transformData);
+		Input(			gd, r		);
+		Update(			gd, r		);
+		GenerateOutput(			gd, r		);
 	}
 }
 
@@ -65,7 +63,10 @@ void ShutDown(GameData* gd)
 {
 }
 
-void Input(GameData& gd, MoveData& moveData, InputData& inputData)
+void Input(
+	GameData& gd, 
+	Registry& r
+)
 {
 	SDL_Event event;
 	while (SDL_PollEvent(&event))
@@ -86,12 +87,11 @@ void Input(GameData& gd, MoveData& moveData, InputData& inputData)
 		gd.isRunning = false;
 	}
 
-	ProcessInput(state, moveData, inputData);
-	/*ShootingSystem(registry, gd->renderer, state);*/
+	ProcessInput(r, state);
+	//ShootingSystem(registry, gd->renderer, state);
 }
 
-void Update(GameData& gd, TransformData& transformData, MoveData& moveData,
-	LaserData& laserData, CircleData& circleData)
+void Update(GameData& gd, Registry& r)
 {
 	while (!SDL_TICKS_PASSED(SDL_GetTicks(), gd.ticksCount + 16))
 		;
@@ -103,15 +103,17 @@ void Update(GameData& gd, TransformData& transformData, MoveData& moveData,
 	}
 	gd.ticksCount = SDL_GetTicks();
 
-	UpdateGame(transformData, moveData, laserData, circleData, deltaTime);
+	UpdateGame(r, deltaTime);
+
+	CollisionSystem(r, deltaTime);
 }
 
-void GenerateOutput(GameData& gd, SpriteData& spriteData, TransformData& transformData)
+void GenerateOutput(GameData& gd, Registry& r)
 {
 	SDL_SetRenderDrawColor(gd.renderer, 0, 0, 0, 255);
 	SDL_RenderClear(gd.renderer);
 
-	RenderGame(gd.renderer, spriteData, transformData);
+	RenderGame(gd.renderer, r);
 
 	SDL_RenderPresent(gd.renderer);
 }
@@ -148,33 +150,35 @@ SDL_Texture* GetTexture(const std::string& fileName, SDL_Renderer* renderer)
 	return tex;
 }
 
-void LoadData(GameData& gd, SpriteData& spriteData, TransformData& transformData,
-	MoveData& moveData, InputData& inputData, ShootData& shootData,
-	CircleData& circleData, EntityIndices& entityIndices)
+void LoadData(GameData& gd, Registry& r)
 {
 	SDL_Texture* shipTex = GetTexture("Assets/Ship.png", gd.renderer);
 	int width, height;
 	SDL_QueryTexture(shipTex, nullptr, nullptr, &width, &height);
 
-	transformData.pos.push_back({ 100.0f,384.0f });
-	transformData.rot.push_back(0.0f);
+	r.transformData.pos.push_back({ 100.0f,384.0f });
+	r.transformData.rot.push_back(0.0f);
 
+	SpriteData& spriteData = r.sprites;
 	spriteData.textures.push_back(shipTex);
 	spriteData.texWidths.push_back(width);
 	spriteData.texHeights.push_back(height);
 
-	moveData.angularSpeed.push_back(0.0f);
-	moveData.forwardSpeed.push_back(0.0f);
 
-	inputData.forwardKey = SDL_SCANCODE_W;
-	inputData.backKey = SDL_SCANCODE_S;
-	inputData.clockwiseKey = SDL_SCANCODE_A;
-	inputData.counterClockwiseKey = SDL_SCANCODE_D;
+	r.moveData.angularSpeed.push_back(0.0f);
+	r.moveData.forwardSpeed.push_back(0.0f);
 
-	shootData.shootKey = SDL_SCANCODE_SPACE;
-	shootData.shootCooldown = 0.5f;
+	r.inputData.forwardKey = SDL_SCANCODE_W;
+	r.inputData.backKey = SDL_SCANCODE_S;
+	r.inputData.clockwiseKey = SDL_SCANCODE_A;
+	r.inputData.counterClockwiseKey = SDL_SCANCODE_D;
+	r.inputData.maxFwdSpeed = 300.0f;
+	r.inputData.maxAngSpeed = Math::TwoPi;
 
-	entityIndices.shipIndex = 0;
+	r.shootData.shootKey = SDL_SCANCODE_SPACE;
+	r.shootData.shootCooldown = 0.5f;
+
+	r.entityIndices.shipIndex = 0;
 
 	const int numAsteroids = 20;
 	for (int i = 0; i < numAsteroids; ++i) {
@@ -186,15 +190,15 @@ void LoadData(GameData& gd, SpriteData& spriteData, TransformData& transformData
 		spriteData.texHeights.push_back(height);
 
 		Vector2 randPos = Random::GetVector(Vector2::Zero, Vector2(1024.0f, 768.0f));
-		transformData.pos.push_back({ randPos.x,randPos.y });
-		transformData.rot.push_back(Random::GetFloatRange(0.0f, Math::TwoPi));
+		r.transformData.pos.push_back({ randPos.x,randPos.y });
+		r.transformData.rot.push_back(Random::GetFloatRange(0.0f, Math::TwoPi));
 
-		moveData.angularSpeed.push_back(0.0f);
-		moveData.forwardSpeed.push_back(150.0f);
+		r.moveData.angularSpeed.push_back(0.0f);
+		r.moveData.forwardSpeed.push_back(150.0f);
 
-		circleData.radius.push_back(40.0f);
+		r.circleData.radius.push_back(40.0f);
 
-		entityIndices.asteroidIndices.push_back(i + 1); // Ship is at 0, asteroids start at 1
+		r.entityIndices.asteroidIndices.push_back(i + 1); // Ship is at 0, asteroids start at 1
 	}
 }
 

@@ -3,6 +3,34 @@
 #include "Math.h"
 #include "Game.h"
 
+void InputSystem(entt::registry* registry, const Uint8* keyState)
+{
+    auto input = registry->view<const Input, Move>();
+    input.each([keyState](const Input& input, Move& move) {
+        float forwardSpeed = 0.0f;
+        if (keyState[input.forwardKey])
+        {
+            forwardSpeed += input.maxFwdSpeed;
+        }
+        if (keyState[input.backKey])
+        {
+            forwardSpeed -= input.maxFwdSpeed;
+        }
+        move.forwardSpeed = forwardSpeed;
+
+        float angularSpeed = 0.0f;
+        if (keyState[input.clockwiseKey])
+        {
+            angularSpeed += input.maxAngSpeed;
+        }
+        if (keyState[input.counterClockwiseKey])
+        {
+            angularSpeed -= input.maxAngSpeed;
+        }
+        move.angularSpeed = angularSpeed;
+        });
+}
+
 void ShootingSystem(entt::registry* registry, SDL_Renderer* renderer,const Uint8* keyState)
 {
     auto shooter = registry->view<Shoot, const Transform>();
@@ -59,33 +87,7 @@ void CollisionSystem(entt::registry* registry, float deltaTime)
     registry->destroy(destroyEntities.begin(), destroyEntities.end());
 }
 
-void InputSystem(entt::registry* registry,const Uint8* keyState)
-{
-    auto input = registry->view<const Input, Move>();
-    input.each([keyState](const Input& input, Move& move) {
-        float forwardSpeed = 0.0f;
-        if (keyState[input.forwardKey])
-        {
-            forwardSpeed += input.maxFwdSpeed;
-        }
-        if (keyState[input.backKey])
-        {
-            forwardSpeed -= input.maxFwdSpeed;
-        }
-        move.forwardSpeed = forwardSpeed;
 
-        float angularSpeed = 0.0f;
-        if (keyState[input.clockwiseKey])
-        {
-            angularSpeed += input.maxAngSpeed;
-        }
-        if (keyState[input.counterClockwiseKey])
-        {
-            angularSpeed -= input.maxAngSpeed;
-        }
-        move.angularSpeed = angularSpeed;
-    });
-}
 
 void MovementSystem(entt::registry* registry, float deltaTime) {
     registry->view<const Move, Transform>().each([deltaTime](const Move& move, Transform& _pos) {

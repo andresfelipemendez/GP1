@@ -105,7 +105,7 @@ void UpdateGame(GameData* gd, entt::registry* registry)
 
 void GenerateOutput(GameData* gd, entt::registry* registry)
 {
-	SDL_SetRenderDrawColor(gd->renderer, 0, 0, 0, 255);
+	SDL_SetRenderDrawColor(gd->renderer, 150, 150, 150, 255);
 	SDL_RenderClear(gd->renderer);
 
 	RenderSystem(gd->renderer, registry);
