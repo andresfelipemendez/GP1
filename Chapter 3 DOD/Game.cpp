@@ -53,9 +53,9 @@ bool InitializeGame(GameData& gd, Registry& r)
 void RunLoop(GameData& gd, Registry& r)
 {
 	while (gd.isRunning) {
-		Input(			gd, r		);
-		Update(			gd, r		);
-		GenerateOutput(			gd, r		);
+		Input(gd, r);
+		Update(gd, r);
+		GenerateOutput(gd, r);
 	}
 }
 
@@ -63,10 +63,7 @@ void ShutDown(GameData* gd)
 {
 }
 
-void Input(
-	GameData& gd, 
-	Registry& r
-)
+void Input(GameData& gd, Registry& r)
 {
 	SDL_Event event;
 	while (SDL_PollEvent(&event))
@@ -88,7 +85,7 @@ void Input(
 	}
 
 	ProcessInput(r, state);
-	//ShootingSystem(registry, gd->renderer, state);
+	ShootingSystem(r, gd.renderer, state);
 }
 
 void Update(GameData& gd, Registry& r)
@@ -159,7 +156,7 @@ void LoadData(GameData& gd, Registry& r)
 	r.transformData.pos.push_back({ 100.0f,384.0f });
 	r.transformData.rot.push_back(0.0f);
 
-	SpriteData& spriteData = r.sprites;
+	SpriteData& spriteData = r.spriteData;
 	spriteData.textures.push_back(shipTex);
 	spriteData.texWidths.push_back(width);
 	spriteData.texHeights.push_back(height);
@@ -199,6 +196,7 @@ void LoadData(GameData& gd, Registry& r)
 		r.circleData.radius.push_back(40.0f);
 
 		r.entityIndices.asteroidIndices.push_back(i + 1); // Ship is at 0, asteroids start at 1
+		r.entityIndices.laserOffset++;
 	}
 }
 

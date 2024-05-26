@@ -26,96 +26,109 @@ void ProcessInput(Registry& r, const Uint8* state)
     r.moveData.angularSpeed[i] = ang;
 }
 
+
+void ShootingSystem(Registry& r, SDL_Renderer* renderer, const Uint8* state) {
+  if(state[r.shootData.shootKey] && r.shootData.shootCooldown < 0.0f) {
+    // laserIndicesStart = player + asteroidCount 
+    const auto& shipPos = r.transformData.pos[r.entityIndices.shipIndex];
+    const auto& shipRot = r.transformData.rot[r.entityIndices.shipIndex];
+    r.entityIndices.laserIndices.emplace_back(21 + static_cast<int>(r.entityIndices.laserIndices.size()));
+    r.moveData.angularSpeed.emplace_back(0.0f);
+    r.moveData.forwardSpeed.emplace_back(800.0f);
+    r.transformData.pos.emplace_back(shipPos.x, shipPos.y);
+    r.transformData.rot.emplace_back(shipRot);
+    r.laserData.life.emplace_back(11.0f);
+    r.laserData.radius.emplace_back(1.0f);
+    SDL_Texture* tex = GetTexture("Assets/Laser.png", renderer);
+    int width, height;
+    SDL_QueryTexture(tex,nullptr,nullptr,&width,&height);
+    r.spriteData.textures.emplace_back(tex);
+    r.spriteData.texWidths.emplace_back(width);
+    r.spriteData.texHeights.emplace_back(height);
+    r.shootData.shootCooldown = 0.5f;
+  }
+}
+
 void UpdateGame(Registry& r, float deltaTime)
 {
-    for (size_t i = 0; i < moveData.angularSpeed.size(); ++i) {
-        if (!Math::NearZero(moveData.angularSpeed[i])) {
-            transformData.rot[i] += moveData.angularSpeed[i] * deltaTime;
+    r.shootData.shootCooldown -= deltaTime;
+
+    for (size_t i = 0; i < r.moveData.angularSpeed.size(); ++i) {
+        if (!Math::NearZero(r.moveData.angularSpeed[i])) {
+            r.transformData.rot[i] += r.moveData.angularSpeed[i] * deltaTime;
         }
 
-        if (!Math::NearZero(moveData.forwardSpeed[i])) {
-            Vector2 pos(transformData.pos[i].x, transformData.pos[i].y);
-            Vector2 forward(Math::Cos(transformData.rot[i]), -Math::Sin(transformData.rot[i]));
+        if (!Math::NearZero(r.moveData.forwardSpeed[i])) {
+            Vector2 pos(r.transformData.pos[i].x, r.transformData.pos[i].y);
+            Vector2 forward(Math::Cos(r.transformData.rot[i]), -Math::Sin(r.transformData.rot[i]));
 
-            pos += forward * moveData.forwardSpeed[i] * deltaTime;
+            pos += forward * r.moveData.forwardSpeed[i] * deltaTime;
 
             if (pos.x < 0.0f) pos.x = 1024.0f;
             if (pos.x > 1024.0f) pos.x = 0.0f;
             if (pos.y < 0.0f) pos.y = 768.0f;
             if (pos.y > 768.0f) pos.y = 0.0f;
 
-            transformData.pos[i] = pos;
+            r.transformData.pos[i] = pos;
         }
     }
+}
+
+void RenderSprite(size_t index, Registry& r, SDL_Renderer* renderer) {
+    SDL_Rect rec;
+    rec.w = static_cast<int>(r.spriteData.texWidths[index]);
+    rec.h = static_cast<int>(r.spriteData.texHeights[index]);
+    rec.x = static_cast<int>(r.transformData.pos[index].x - rec.w / 2);
+    rec.y = static_cast<int>(r.transformData.pos[index].y - rec.h / 2);
+    SDL_RenderCopyEx(renderer, r.spriteData.textures[index], nullptr, &rec, -Math::ToDegrees(r.transformData.rot[index]), nullptr, SDL_FLIP_NONE);
 }
 
 void RenderGame(SDL_Renderer* renderer, Registry& r) {
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
 
-    for (size_t i = 0; i < r.spriteData.textures.size(); ++i) {
-        SDL_Rect rec;
-        rec.w = static_cast<int>(r.spriteData.texWidths[i] );
-        rec.h = static_cast<int>(r.spriteData.texHeights[i] );
-        rec.x = static_cast<int>(r.transformData.pos[i].x - rec.w / 2);
-        rec.y = static_cast<int>(r.transformData.pos[i].y - rec.h / 2);
+    RenderSprite(r.entityIndices.shipIndex, r, renderer);
 
-        SDL_RenderCopyEx(renderer, r.spriteData.textures[i], nullptr, &rec, -Math::ToDegrees(r.transformData.rot[i]), nullptr, SDL_FLIP_NONE);
+    for (size_t asteroidIndex : r.entityIndices.asteroidIndices)
+    {
+        RenderSprite(asteroidIndex, r, renderer);
     }
-
+    for (size_t laserIndex : r.entityIndices.laserIndices) {
+        RenderSprite(laserIndex, r, renderer);
+    }
     SDL_RenderPresent(renderer);
 }
 
-void CollisionSystem(
-    TransformData& transformData,
-    LaserData& laserData,
-    ShootData& shootData,
-    CircleData& circleData,
-    EntityIndices& entityIndices, 
-    float deltaTime
-)
+void CollisionSystem(Registry& r, float deltaTime)
 {
-    shootData.shootCooldown -= deltaTime;
-    
+    r.shootData.shootCooldown -= deltaTime;
+    for (size_t laserIdx = 0; laserIdx <r.entityIndices.laserIndices.size(); ++laserIdx) {
+        size_t laserIndex = r.entityIndices.laserIndices[laserIdx];
+        size_t laserDataIndex = laserIndex - r.entityIndices.laserOffset;
+        float laserX = r.transformData.pos[laserIndex].x;
+        float laserY = r.transformData.pos[laserIndex].y;
+        float laserRadius = r.laserData.radius[laserDataIndex];
 
-    for (size_t laserIdx = 0; laserIdx < entityIndices.laserIndices.size(); ++laserIdx) {
-        int laserEntity = entityIndices.laserIndices[laserIdx];
-        float laserX = transformData.pos[laserEntity].x;
-        float laserY = transformData.pos[laserEntity].y;
-        float laserRadius = laserData.radius[laserEntity];
-
-        for (size_t asteroidIdx = 0; asteroidIdx < entityIndices.asteroidIndices.size(); ++asteroidIdx) {
-            int asteroidEntity = entityIndices.asteroidIndices[asteroidIdx];
-            float asteroidX = transformData.pos[asteroidEntity].x;
-            float asteroidY = transformData.pos[asteroidEntity].y;
-            float asteroidRadius = circleData.radius[asteroidEntity];
+        for (size_t asteroidIdx = 0; asteroidIdx <r.entityIndices.asteroidIndices.size(); ++asteroidIdx) {
+            int asteroidEntity = r.entityIndices.asteroidIndices[asteroidIdx];
+            size_t circleDataIndex = asteroidEntity - r.entityIndices.asteroidOffset;
+            float asteroidX = r.transformData.pos[asteroidEntity].x;
+            float asteroidY = r.transformData.pos[asteroidEntity].y;
+            float asteroidRadius = r.circleData.radius[circleDataIndex];
 
             float distSq = (laserX - asteroidX) * (laserX - asteroidX) + (laserY - asteroidY) * (laserY - asteroidY);
             float radiiSq = (laserRadius + asteroidRadius) * (laserRadius + asteroidRadius);
 
             if (distSq <= radiiSq) {
-                entityIndices.destroyIndices.push_back(laserEntity);
-                entityIndices.destroyIndices.push_back(asteroidEntity);
-                break; // Once the laser hits an asteroid, stop checking other asteroids
+               r.entityIndices.destroyAsteroidIndices.push_back(asteroidIdx);
+               r.entityIndices.destroyLaserIndices.push_back(laserIdx);
+               break;
             }
         }
     }
-
-    
 }
 
-void RemoveEntities(
-    TransformData& transformData, 
-    SpriteData& spriteData, 
-    MoveData& moveData, 
-    InputData& inputData, 
-    ShootData& shootData, 
-    CircleData& circleData, 
-    LaserData& laserData, 
-    EntityIndices& entityIndices
-)
+void RemoveEntities(Registry& r)
 {
-
-    std::sort(entityIndices.destroyIndices.rbegin(), entityIndices.destroyIndices.rend());
-
+   // std::sort(entityIndices.destroyIndices.rbegin(),r.entityIndices.destroyIndices.rend());
 }

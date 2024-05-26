@@ -24,7 +24,4 @@ void Update(GameData& gd, Registry& r);
 
 void GenerateOutput(GameData& gd, Registry& r);
  
-SDL_Texture* GetTexture(
-	const std::string& fileName, 
-	SDL_Renderer* renderer
-);
+SDL_Texture* GetTexture(const std::string& fileName, SDL_Renderer* renderer);

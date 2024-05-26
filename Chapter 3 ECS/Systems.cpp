@@ -28,7 +28,7 @@ void InputSystem(entt::registry* registry, const Uint8* keyState)
             angularSpeed -= input.maxAngSpeed;
         }
         move.angularSpeed = angularSpeed;
-        });
+    });
 }
 
 void ShootingSystem(entt::registry* registry, SDL_Renderer* renderer,const Uint8* keyState)
