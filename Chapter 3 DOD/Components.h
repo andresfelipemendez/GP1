@@ -1,5 +1,6 @@
 #pragma once
 #include <vector>
+#include <set>
 #include "Math.h"
 
 struct SpriteData {
@@ -38,17 +39,18 @@ struct CircleData {
 
 struct ShootData {
     int shootKey;
-    float shootCooldown;
+    float shootCooldown = 0.0f;
 };
 
 struct EntityIndices {
     int shipIndex = 0;
+    int shipOffset = 1;
     size_t asteroidOffset = 1;
-    size_t laserOffset = 1; // ship it's index 0
     std::vector<int> asteroidIndices;
     std::vector<int> laserIndices;
-    std::vector<int> destroyAsteroidIndices;
-    std::vector<int> destroyLaserIndices;
+    std::vector<int> freeLaserIndices;
+    std::set<int> destroyAsteroidIndices;
+    std::set<int> destroyLaserIndices;
 };
 
 struct Registry {

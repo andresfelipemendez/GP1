@@ -102,7 +102,8 @@ void Update(GameData& gd, Registry& r)
 
 	UpdateGame(r, deltaTime);
 
-	CollisionSystem(r, deltaTime);
+	CollisionSystem(r, deltaTime); 
+	RemoveEntities(r);
 }
 
 void GenerateOutput(GameData& gd, Registry& r)
@@ -177,26 +178,42 @@ void LoadData(GameData& gd, Registry& r)
 
 	r.entityIndices.shipIndex = 0;
 
+	SDL_Texture* asteroidTex = GetTexture("Assets/Asteroid.png", gd.renderer);
+	SDL_QueryTexture(asteroidTex, nullptr, nullptr, &width, &height);
 	const int numAsteroids = 20;
 	for (int i = 0; i < numAsteroids; ++i) {
-		SDL_Texture* asteroidTex = GetTexture("Assets/Asteroid.png", gd.renderer);
-		SDL_QueryTexture(asteroidTex, nullptr, nullptr, &width, &height);
-
-		spriteData.textures.push_back(asteroidTex);
-		spriteData.texWidths.push_back(width);
-		spriteData.texHeights.push_back(height);
+		spriteData.textures.emplace_back(asteroidTex);
+		spriteData.texWidths.emplace_back(width);
+		spriteData.texHeights.emplace_back(height);
 
 		Vector2 randPos = Random::GetVector(Vector2::Zero, Vector2(1024.0f, 768.0f));
-		r.transformData.pos.push_back({ randPos.x,randPos.y });
-		r.transformData.rot.push_back(Random::GetFloatRange(0.0f, Math::TwoPi));
+		r.transformData.pos.emplace_back( randPos.x,randPos.y );
+		r.transformData.rot.emplace_back(Random::GetFloatRange(0.0f, Math::TwoPi));
 
-		r.moveData.angularSpeed.push_back(0.0f);
-		r.moveData.forwardSpeed.push_back(150.0f);
+		r.moveData.angularSpeed.emplace_back(0.0f);
+		r.moveData.forwardSpeed.emplace_back(150.0f);
 
-		r.circleData.radius.push_back(40.0f);
+		r.circleData.radius.emplace_back(40.0f);
 
-		r.entityIndices.asteroidIndices.push_back(i + 1); // Ship is at 0, asteroids start at 1
-		r.entityIndices.laserOffset++;
+		r.entityIndices.asteroidIndices.emplace_back(i);
+		r.entityIndices.asteroidOffset++;
+	}
+
+	SDL_Texture* laser_tex = GetTexture("Assets/Laser.png", gd.renderer);
+	SDL_QueryTexture(laser_tex, nullptr, nullptr, &width, &height);
+	const int numLasers = 23; 
+	for (int i = 0; i < numLasers; ++i) 
+	{
+		r.moveData.angularSpeed.emplace_back(0.0f);
+		r.moveData.forwardSpeed.emplace_back(800.0f);
+		r.transformData.pos.emplace_back(0,0);
+		r.transformData.rot.emplace_back(0);
+		r.laserData.life.emplace_back(0);
+		r.laserData.radius.emplace_back(0);
+		r.spriteData.textures.emplace_back(laser_tex);
+		r.spriteData.texWidths.emplace_back(width);
+		r.spriteData.texHeights.emplace_back(height);
+		r.entityIndices.freeLaserIndices.emplace_back(i);
 	}
 }
 
