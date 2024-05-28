@@ -1,7 +1,6 @@
 #include <iostream>
 
 #include "Game.h"
-
 #include <entt/entt.hpp>
 
 int main(int argc, char* argv[])

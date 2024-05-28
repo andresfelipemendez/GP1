@@ -1,37 +1,21 @@
-// hotreload.cpp : This file contains the 'main' function. Program execution begins and ends there.
-
 #include <iostream>
-#include <filesystem>
-#include <chrono>
+#include <entt/entt.hpp>
 #include <string>
-#include <direct.h>
-
-#define WIN32_LEAN_AND_MEAN 
-#include <Windows.h>
+#include <filesystem>
+#include "hot_reload.h"
 
 namespace fs = std::filesystem;
 
-typedef int (*FnEnginelib)();
+int main(int argc, char* argv[]) {
+    std::string directory_to_watch_str = getCurrentWorkingDirectory();
 
-int main()
-{    
-    char* buffer;
-    WCHAR directory_to_watch[MAX_PATH];
-
-    if ((buffer = _getcwd(NULL, 0)) == NULL) {
-        perror("_getcwd error");
+    if (directory_to_watch_str.empty()) {
         return 1;
-    } else {
-        mbstowcs(directory_to_watch, buffer, MAX_PATH);
-        free(buffer);
     }
 
-    std::wstring ws_directory_to_watch(directory_to_watch);
-    std::string directory_to_watch_str(ws_directory_to_watch.begin(), ws_directory_to_watch.end());
-
-    // Constructing paths for DLLs
-    std::string originalDLLpath = directory_to_watch_str + "\\game.dll";
-    std::string copyDLLpath = directory_to_watch_str + "\\game_copy.dll";
+    // Constructing paths for DLLs (or shared libraries on Linux)
+    std::string originalDLLpath = directory_to_watch_str + "/game.dll";
+    std::string copyDLLpath = directory_to_watch_str + "/game_copy.dll";
 
     if (!fs::exists(originalDLLpath)) {
         std::cerr << "Original DLL not found: " << originalDLLpath << '\n';
@@ -40,25 +24,29 @@ int main()
         fs::copy(originalDLLpath, copyDLLpath, fs::copy_options::overwrite_existing);
     }
 
-    auto lastModifiedTime = std::filesystem::last_write_time(originalDLLpath);
-
-    HINSTANCE engineLibrary = LoadLibraryA(copyDLLpath.c_str());
-    if (!engineLibrary) {
-        std::cerr << "Library couldn't be loaded: " << copyDLLpath << " (Error: " << GetLastError() << ")\n";
-        return -1;
-    }
-    
-    FnEnginelib enginefunction = (FnEnginelib)GetProcAddress(engineLibrary, "fnenginelib");
-
-    if (!enginefunction) {
-        std::cerr << "Unable to find fnenginelib" << std::endl;
-        FreeLibrary(engineLibrary);
+    if (!loadLibrary(copyDLLpath)) {
         return -1;
     }
 
-    enginefunction();
+    InitFunc init = getInitFunction();
+    UpdateFunc update = getUpdateFunction();
+    ShutdownFunc shutdown = getShutdownFunction();
 
-    FreeLibrary(engineLibrary);
+    if (!init || !update || !shutdown) {
+        std::cerr << "Unable to find necessary functions in the library" << std::endl;
+        unloadLibrary();
+        return -1;
+    }
+
+    GameData gameData;
+    entt::registry registry;
+
+    if (init(&gameData, &registry)) {
+        update(&gameData, &registry);
+    }
+    shutdown(&gameData);
+
+    unloadLibrary();
 
     return 0;
 }
