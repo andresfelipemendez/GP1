@@ -2,6 +2,7 @@
 #include <entt/entt.hpp>
 #include <string>
 #include <filesystem>
+#include "../game/Game.h"
 #include "hot_reload.h"
 
 namespace fs = std::filesystem;

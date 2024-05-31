@@ -1,12 +1,12 @@
 #include "hot_reload.h"
 #include <iostream>
 
-static void* hLib = nullptr;
+static HINSTANCE hLib = nullptr;
 
 bool loadLibrary(const std::string& libName) {
-    hLib = dlopen(libName.c_str(), RTLD_LAZY);
+    hLib = LoadLibraryA(libName.c_str());
     if (!hLib) {
-        std::cerr << "Library couldn't be loaded: " << libName << " (Error: " << dlerror() << ")\n";
+        std::cerr << "Library couldn't be loaded: " << libName << " (Error: " << GetLastError() << ")\n";
         return false;
     }
     return true;
@@ -14,27 +14,27 @@ bool loadLibrary(const std::string& libName) {
 
 void unloadLibrary() {
     if (hLib) {
-        dlclose(hLib);
+        FreeLibrary(hLib);
         hLib = nullptr;
     }
 }
 
 InitFunc getInitFunction() {
-    return (InitFunc)dlsym(hLib, "init");
+    return (InitFunc)GetProcAddress(hLib, "init");
 }
 
 UpdateFunc getUpdateFunction() {
-    return (UpdateFunc)dlsym(hLib, "update");
+    return (UpdateFunc)GetProcAddress(hLib, "update");
 }
 
 ShutdownFunc getShutdownFunction() {
-    return (ShutdownFunc)dlsym(hLib, "shutdown");
+    return (ShutdownFunc)GetProcAddress(hLib, "shutdown");
 }
 
 std::string getCurrentWorkingDirectory() {
     char* buffer;
     if ((buffer = getcwd(NULL, 0)) == NULL) {
-        perror("getcwd error");
+        perror("_getcwd error");
         return "";
     } else {
         std::string cwd(buffer);
