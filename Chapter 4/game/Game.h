@@ -1,11 +1,10 @@
 #pragma once
-#include <SDL.h>
 #include <entt/entt.hpp>
 
 struct GameData {
-	SDL_Window* window = nullptr;
-	SDL_Renderer* renderer = nullptr;
-	Uint32 ticksCount = 0;
+	class SDL_Window* window = nullptr;
+	class SDL_Renderer* renderer = nullptr;
+	uint32_t ticksCount = 0;
 	bool isRunning = false;
 	bool updatingActors = false;
 };
@@ -21,4 +20,4 @@ void LoadData(GameData* gd, entt::registry* registry);
 void UnloadData(GameData* gd);
  
 
-SDL_Texture* GetTexture(const std::string& fileName, SDL_Renderer* renderer);
+class SDL_Texture* GetTexture(const std::string& fileName, class SDL_Renderer* renderer);
