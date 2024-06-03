@@ -24,7 +24,7 @@ bool Game::Initialize()
 	}
 
 	mWindow = SDL_CreateWindow(
-		"Game Programming in C++ (Chapter 3)",
+		"Game Programming in C++ (Chapter 4)",
 		100,
 		100,
 		1024,

@@ -24,6 +24,7 @@
     <ProjectGuid>{01967eff-050e-41e3-892b-ed54c9ea75ef}</ProjectGuid>
     <RootNamespace>CHPT3</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <ProjectName>CHPT4 OOP</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -136,7 +137,7 @@
     <ClCompile Include="Actor.cpp" />
     <ClCompile Include="AnimSpriteComponent.cpp" />
     <ClCompile Include="Asteroid.cpp" />
-    <ClCompile Include="CHPT3.cpp" />
+    <ClCompile Include="Main.cpp" />
     <ClCompile Include="CircleComponent.cpp" />
     <ClCompile Include="Component.cpp" />
     <ClCompile Include="Game.cpp" />
