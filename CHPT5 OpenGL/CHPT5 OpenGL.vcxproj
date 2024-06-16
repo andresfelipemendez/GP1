@@ -72,7 +72,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>$(SolutionDir)..\Lib\SDL2_image\include;$(SolutionDir)..\Lib\SDL2\include;$(IncludePath)</IncludePath>
+    <IncludePath>C:\Users\fmend\Development\GP1\Lib\glew-2.1.0\include;$(SolutionDir)..\Lib\SDL2_image\include;$(SolutionDir)..\Lib\SDL2\include;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)..\Lib\SDL2_image\lib\x64;$(SolutionDir)..\Lib\SDL2\lib\x64;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -113,8 +113,8 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>OpenGl32.lib;SDL2.lib;SDL2_image.lib;SDL2main.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)..\Lib\SDL2_image\lib\x64;$(SolutionDir)..\Lib\SDL2\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>OpenGl32.lib;SDL2.lib;glew32.lib;glew32s.lib;SDL2_image.lib;SDL2main.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\Users\fmend\Development\GP1\Lib\glew-2.1.0\lib\Release\x64;$(SolutionDir)..\Lib\SDL2_image\lib\x64;$(SolutionDir)..\Lib\SDL2\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -176,6 +176,11 @@
       <FileType>Document</FileType>
     </CopyFileToFolders>
     <CopyFileToFolders Include="..\Lib\SDL2_image\lib\x64\SDL2_image.dll">
+      <FileType>Document</FileType>
+    </CopyFileToFolders>
+  </ItemGroup>
+  <ItemGroup>
+    <CopyFileToFolders Include="..\Lib\glew-2.1.0\bin\Release\x64\glew32.dll">
       <FileType>Document</FileType>
     </CopyFileToFolders>
   </ItemGroup>

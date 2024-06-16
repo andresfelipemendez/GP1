@@ -41,7 +41,7 @@ public:
 	std::vector<class SpriteComponent*> mSprites;
 
 	SDL_Window* mWindow = nullptr;
-	SDL_Renderer* mRenderer = nullptr;
+	SDL_GLContext mContext;
 	Uint32 mTicksCount = 0;
 	bool mIsRunning = false;
 	bool mUpdatingActors = false;
