@@ -29,8 +29,13 @@ public:
 	void ProcessInput();
 	void UpdateGame();
 	void GenerateOutput();
+	bool LoadShaders();
 	void LoadData();
 	void UnloadData();
+	void CreateSpriteVerts();
+
+	class Shader* mSpriteShader = nullptr;
+	class VertexArray* mSpriteVerts = nullptr;
 
 	std::unordered_map<std::string, SDL_Texture*> mTextures;
 

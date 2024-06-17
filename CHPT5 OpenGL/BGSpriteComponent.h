@@ -9,7 +9,7 @@ public:
 	BGSpriteComponent(class Actor* owner, int drawOrder = 10);
 
 	void Update(float deltaTime) override;
-	void Draw(SDL_Renderer* renderer) override;
+	void Draw(class Shader* renderer) override;
 	void SetBGTextures(const std::vector<SDL_Texture*>& textures);
 //private:
 	struct BGTexture

@@ -1,6 +1,7 @@
 #include "SpriteComponent.h"
 #include "Actor.h"
 #include "Game.h"
+#include "Shader.h"
 
 SpriteComponent::SpriteComponent(Actor* owner, int drawORder): 
 	Component(owner, drawORder),
@@ -17,27 +18,15 @@ SpriteComponent::~SpriteComponent()
 	mOwner->mGame->RemoveSprite(this);
 }
 
-void SpriteComponent::Draw(SDL_Renderer* renderer)
+void SpriteComponent::Draw(Shader* renderer)
 {
 
-	if (mTexture)
-	{
-		SDL_Rect r;
-		r.w = static_cast<int>(mTextWidth * mOwner->mScale);
-		r.h = static_cast<int>(mTextHeight * mOwner->mScale);
-		r.x = static_cast<int>(mOwner->mPosition.x - r.w / 2);
-		r.y = static_cast<int>(mOwner->mPosition.y - r.h / 2);
-
-		SDL_RenderCopyEx(
-			renderer,
-			mTexture,
-			nullptr,
-			&r,
-			-Math::ToDegrees(mOwner->mRotation),
-			nullptr,
-			SDL_FLIP_NONE
-		);
-	}
+	glDrawElements(
+		GL_TRIANGLES,
+		6,
+		GL_UNSIGNED_INT,
+		nullptr
+	);
 }
 
 void SpriteComponent::SetTexture(SDL_Texture* texture)

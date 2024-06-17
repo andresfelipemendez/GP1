@@ -7,6 +7,8 @@
 #include "BGSpriteComponent.h"
 #include "Asteroid.h"
 #include "GL/glew.h"
+#include "Shader.h"
+#include "VertexArray.h"
 
 Game::Game() :
 	mWindow(nullptr),
@@ -58,10 +60,13 @@ bool Game::Initialize()
 	}
 	glGetError();
 
-	if (IMG_Init(IMG_INIT_PNG) == 0) {
-		SDL_Log("Unable to initialize SDL_image: %s", SDL_GetError());
+	if (!LoadShaders())
+	{
+		SDL_Log("Failed to load shaders.");
 		return false;
 	}
+
+	CreateSpriteVerts();
 
 	LoadData();
 	
@@ -156,13 +161,46 @@ void Game::GenerateOutput()
 
 	glClear(GL_COLOR_BUFFER_BIT);
 
+	mSpriteShader->SetActive();
+	mSpriteVerts->SetActive();
+
 	for (auto sprite : mSprites)
 	{
-		//sprite->Draw(mRenderer);
+		sprite->Draw(mSpriteShader);
 
 	}
 
 	SDL_GL_SwapWindow(mWindow);
+}
+
+bool Game::LoadShaders()
+{
+	mSpriteShader = new Shader();
+	if (!mSpriteShader->Load("Shaders/Basic.vert", "Shaders/Basic.frag"))
+	{
+		return false;
+	}
+	mSpriteShader->SetActive();
+	/*Matrix4 viewProj = Matrix4::CreateSimpleViewProj(1024.f, 768.f);
+	mSpriteShader->SetMatrixUniform("uViewProj")*/
+	return true;
+}
+
+void Game::CreateSpriteVerts() 
+{
+	float vertices[] = {
+		-0.5f,  0.5f, 0.f, 0.f, 0.f,
+		 0.5f,  0.5f, 0.f, 1.f, 0.f,
+		 0.5f, -0.5f, 0.f, 1.f, 1.f,
+		-0.5f, -0.5f, 0.f, 0.f, 1.f,
+	};
+
+	unsigned int indices[] = {
+		0,1,2,
+		2,3,0
+	};
+
+	mSpriteVerts = new VertexArray(vertices, 4, indices, 6);
 }
 
 void Game::LoadData()
@@ -197,30 +235,30 @@ SDL_Texture* Game::GetTexture(const std::string& fileName)
 {
 	SDL_Texture* tex = nullptr;
 
-	auto iter = mTextures.find(fileName);
-	if (iter != mTextures.end()) 
-	{
-		tex = iter->second;
-	}
-	else
-	{
-		SDL_Surface* surf = IMG_Load(fileName.c_str());
-		if (!surf)
-		{
-			SDL_Log("Failed to load texture file %s", fileName.c_str());
-			return nullptr;
-		}
+	//auto iter = mTextures.find(fileName);
+	//if (iter != mTextures.end()) 
+	//{
+	//	tex = iter->second;
+	//}
+	//else
+	//{
+	//	SDL_Surface* surf = IMG_Load(fileName.c_str());
+	//	if (!surf)
+	//	{
+	//		SDL_Log("Failed to load texture file %s", fileName.c_str());
+	//		return nullptr;
+	//	}
 
-		//tex = SDL_CreateTextureFromSurface(mRenderer, surf);
-		SDL_FreeSurface(surf);
-		if (!tex)
-		{
-			SDL_Log("Failed to convert surface to texture for %s", fileName.c_str());
-			return nullptr;
-		}
+	//	//tex = SDL_CreateTextureFromSurface(mRenderer, surf);
+	//	SDL_FreeSurface(surf);
+	//	if (!tex)
+	//	{
+	//		SDL_Log("Failed to convert surface to texture for %s", fileName.c_str());
+	//		return nullptr;
+	//	}
 
-		mTextures.emplace(fileName.c_str(), tex);
-	}
+	//	mTextures.emplace(fileName.c_str(), tex);
+	//}
 	return tex;
 }
 
