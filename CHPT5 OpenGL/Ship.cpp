@@ -9,7 +9,7 @@ Ship::Ship(Game* game) :
 	mLaserCooldown(0.0f)
 {
 	SpriteComponent* sc = new SpriteComponent(this, 150);
-	sc->SetTexture(game->GetTexture("Assets/Ship.png"));
+	//sc->SetTexture(game->GetTexture("Assets/Ship.png"));
 	 
 	InputComponent* ic = new InputComponent(this);
 	ic->mForwardKey = SDL_SCANCODE_W;
@@ -28,9 +28,9 @@ void Ship::UpdateActor(float deltaTime)
 
 void Ship::ActorInput(const uint8_t* keyState) {
 	if (keyState[SDL_SCANCODE_SPACE] && mLaserCooldown <= 0.0f) {
-		Laser* laser = new Laser(mGame);
-		laser->mPosition = mPosition;
-		laser->mRotation = mRotation;
+		Laser* laser = new Laser(GetGame());
+		laser->SetPosition ( GetPosition());
+		laser->SetRotation( GetRotation());
 
 		mLaserCooldown = 0.5f;
 	}

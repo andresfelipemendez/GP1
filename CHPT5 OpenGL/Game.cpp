@@ -4,7 +4,6 @@
 #include "Actor.h"
 #include "SpriteComponent.h"
 #include "Ship.h"
-#include "BGSpriteComponent.h"
 #include "Asteroid.h"
 #include "GL/glew.h"
 #include "Shader.h"
@@ -136,6 +135,7 @@ void Game::UpdateGame()
 
 	for (auto pending : mPendingActors)
 	{
+		pending->ComputeWorldTransform();
 		mActors.emplace_back(pending);
 	}
 	mPendingActors.clear();
@@ -143,7 +143,7 @@ void Game::UpdateGame()
 	std::vector<Actor*> deadActors;
 	for (auto actor : mActors)
 	{
-		if (actor->mState == Actor::EDead)
+		if (actor->GetState() == Actor::EDead)
 		{
 			deadActors.emplace_back(actor);
 		}
@@ -176,13 +176,16 @@ void Game::GenerateOutput()
 bool Game::LoadShaders()
 {
 	mSpriteShader = new Shader();
-	if (!mSpriteShader->Load("Shaders/Basic.vert", "Shaders/Basic.frag"))
+	if (!mSpriteShader->Load("Shaders/Transform.vert", "Shaders/Basic.frag"))
 	{
 		return false;
 	}
+
 	mSpriteShader->SetActive();
-	/*Matrix4 viewProj = Matrix4::CreateSimpleViewProj(1024.f, 768.f);
-	mSpriteShader->SetMatrixUniform("uViewProj")*/
+
+	Matrix4 viewProj = Matrix4::CreateSimpleViewProj(1024.f, 768.f);
+	mSpriteShader->SetMatrixUniform("uViewProj", viewProj);
+
 	return true;
 }
 
@@ -206,8 +209,8 @@ void Game::CreateSpriteVerts()
 void Game::LoadData()
 {
 	mShip = new Ship(this);
-	mShip->mPosition = Vector2(512.0f, 384.0f);
-	mShip->mRotation = Math::PiOver2;
+	mShip->SetPosition(Vector2(512.0f, 384.0f));
+	mShip->SetRotation(Math::PiOver2);
 
 	const int numAsteroids = 20;
 	for (int i = 0; i < numAsteroids; i++) {
@@ -288,6 +291,7 @@ void Game::AddActor(Actor* actor)
 {
 	if (mUpdatingActors)
 	{
+		
 		mPendingActors.emplace_back(actor);
 	}
 	else
@@ -328,6 +332,7 @@ void Game::AddSprite(SpriteComponent* sprite)
 		}
 	}
 	mSprites.insert(iter, sprite);
+
 }
 
 void Game::RemoveSprite(SpriteComponent* sprite)

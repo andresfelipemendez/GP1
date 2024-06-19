@@ -10,16 +10,26 @@ SpriteComponent::SpriteComponent(Actor* owner, int drawORder):
 	mTextWidth(0),
 	mTextHeight(0)
 {
-	mOwner->mGame->AddSprite(this);
+	mOwner->GetGame()->AddSprite(this);
 }
 
 SpriteComponent::~SpriteComponent()
 {
-	mOwner->mGame->RemoveSprite(this);
+	mOwner->GetGame()->RemoveSprite(this);
 }
+ 
 
-void SpriteComponent::Draw(Shader* renderer)
+void SpriteComponent::Draw(Shader* shader)
 {
+	Matrix4 scaleMat = Matrix4::CreateScale(
+		static_cast<float>(mTextWidth),
+		static_cast<float>(mTextHeight),
+		1.0f
+	);
+
+	Matrix4 world = scaleMat * mOwner->GetWorldTransform();
+
+	shader->SetMatrixUniform("uWorldTransform", world);
 
 	glDrawElements(
 		GL_TRIANGLES,
@@ -31,6 +41,6 @@ void SpriteComponent::Draw(Shader* renderer)
 
 void SpriteComponent::SetTexture(SDL_Texture* texture)
 {
-	mTexture = texture;
-	SDL_QueryTexture(texture, nullptr, nullptr, &mTextWidth, &mTextHeight);
+	//mTexture = texture;
+	//SDL_QueryTexture(texture, nullptr, nullptr, &mTextWidth, &mTextHeight);
 }
