@@ -7,8 +7,8 @@ SpriteComponent::SpriteComponent(Actor* owner, int drawORder):
 	Component(owner, drawORder),
 	mTexture(nullptr),
 	mDrawOrder(drawORder),
-	mTextWidth(0),
-	mTextHeight(0)
+	mTextWidth(64),
+	mTextHeight(64)
 {
 	mOwner->GetGame()->AddSprite(this);
 }
@@ -31,6 +31,7 @@ void SpriteComponent::Draw(Shader* shader)
 
 	shader->SetMatrixUniform("uWorldTransform", world);
 
+
 	glDrawElements(
 		GL_TRIANGLES,
 		6,
@@ -41,6 +42,6 @@ void SpriteComponent::Draw(Shader* shader)
 
 void SpriteComponent::SetTexture(SDL_Texture* texture)
 {
-	//mTexture = texture;
-	//SDL_QueryTexture(texture, nullptr, nullptr, &mTextWidth, &mTextHeight);
+	mTexture = texture;
+	SDL_QueryTexture(texture, nullptr, nullptr, &mTextWidth, &mTextHeight);
 }

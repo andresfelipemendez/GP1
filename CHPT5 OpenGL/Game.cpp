@@ -37,7 +37,7 @@ bool Game::Initialize()
 	SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);
 
 	mWindow = SDL_CreateWindow(
-		"Game Programming in C++ (Chapter 4)",
+		"Game Programming in C++ (Chapter 5)",
 		100,
 		100,
 		1024,
