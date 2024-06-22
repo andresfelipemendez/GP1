@@ -1,0 +1,10 @@
+CompileFlags:
+  Add: 
+    - -std=c++17
+    - -I${workspaceFolder}/path/to/include
+    - -I${workspaceFolder}/Lib/SDL2/include
+    - -I${workspaceFolder}/Lib/SDL2_image/include
+    - -L${workspaceFolder}/Lib/SDL2/lib/x64
+    - -L${workspaceFolder}/Lib/SDL2_image/lib/x64
+    - -lSDL2
+    - -lSDL2_image
