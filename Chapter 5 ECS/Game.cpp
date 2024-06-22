@@ -3,6 +3,8 @@
 #include "GL/glew.h"
 #include "Math.h"
 #include "Random.h"
+#include "Rendering.h"
+#include "SDL_stdinc.h"
 #include "SDL_video.h"
 #include "Systems.h"
 #include <SDL.h>
@@ -14,6 +16,16 @@ bool Initialize(GameData *gd, entt::registry *registry) {
     return false;
   }
 
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
+  SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
+  SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
+  SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
+  SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
+  SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+  SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);
+
   gd->window = SDL_CreateWindow("Game Programming in C++ (Chapter 5)", 100, 100,
                                 1024, 768, SDL_WINDOW_OPENGL);
 
@@ -21,6 +33,16 @@ bool Initialize(GameData *gd, entt::registry *registry) {
     SDL_Log("Failed to create window: %s", SDL_GetError());
     return false;
   }
+
+  gd->context = SDL_GL_CreateContext(gd->window);
+
+  glewExperimental = GL_TRUE;
+  if (glewInit() != GLEW_OK) {
+    SDL_Log("Failed to initialize GLEW.");
+    return false;
+  }
+
+  CreateSpriteVerts(gd, registry);
 
   Random::Init();
 
@@ -30,6 +52,26 @@ bool Initialize(GameData *gd, entt::registry *registry) {
   gd->isRunning = true;
   return true;
 }
+
+void CreateSpriteVerts(GameData *gd, entt::registry *registry) {
+  // clang-format off
+  std::vector<float> vertices {
+      -0.5f,   0.5f,  0.f,  0.f,  0.f,
+       0.5f,   0.5f,  0.f,  1.f,  0.f,
+      0.5f, -0.5f, 0.f, 1.f, 1.f,
+     -0.5f, -0.5f, 0.f, 0.f, 1.f
+  };
+
+  std::vector<unsigned int> indices {
+    0,1,2,
+    2,3,0
+  };
+
+  LoadMesh(registry, vertices, indices);
+
+  //clang-format on
+}
+
 void RunLoop(GameData *gd, entt::registry *registry) {
   while (gd->isRunning) {
     ProcessInput(gd, registry);
@@ -58,7 +100,7 @@ void ProcessInput(GameData *gd, entt::registry *registry) {
   }
 
   InputSystem(registry, state);
-  ShootingSystem(registry, gd->renderer, state);
+  ShootingSystem(registry, state);
 }
 
 void UpdateGame(GameData *gd, entt::registry *registry) {
@@ -76,49 +118,39 @@ void UpdateGame(GameData *gd, entt::registry *registry) {
 }
 
 void GenerateOutput(GameData *gd, entt::registry *registry) {
-  SDL_SetRenderDrawColor(gd->renderer, 150, 150, 150, 255);
-  SDL_RenderClear(gd->renderer);
-
-  RenderSystem(gd->renderer, registry);
-
-  SDL_RenderPresent(gd->renderer);
+  RenderSystem(registry);
 }
 
-std::unordered_map<std::string, SDL_Texture *> mTextures;
-SDL_Texture *GetTexture(const std::string &fileName, SDL_Renderer *renderer) {
-  SDL_Texture *tex = nullptr;
+std::unordered_map<std::string, Texture> mTextures;
+Texture GetTexture(const std::string &fileName) {
 
   auto iter = mTextures.find(fileName);
   if (iter != mTextures.end()) {
-    tex = iter->second;
-  } else {
-    SDL_Surface *surf = IMG_Load(fileName.c_str());
-    if (!surf) {
-      SDL_Log("Failed to load texture file %s", fileName.c_str());
-      return nullptr;
-    }
+	  return iter->second;
+  } 
+	auto tex = LoadTexture(fileName);
 
-    tex = SDL_CreateTextureFromSurface(renderer, surf);
-    SDL_FreeSurface(surf);
-    if (!tex) {
-      SDL_Log("Failed to convert surface to texture for %s", fileName.c_str());
-      return nullptr;
-    }
-
-    mTextures.emplace(fileName.c_str(), tex);
-  }
-  return tex;
+mTextures.emplace(fileName.c_str(), tex);
+return tex;
 }
+
+std::unordered_map<std::string, Shader> mShaders;
+Shader GetShader(const std::string& vertexShader, const std::string& fragmentShader) {
+	auto iter = mShaders.find(vertexShader+fragmentShader);
+	if (iter != mShaders.end()) {
+		return iter->second;
+	}
+	auto shader = LoadShader(vertexShader, fragmentShader);
+}
+
+
 
 void LoadData(GameData *gd, entt::registry *registry) {
   auto ship = registry->create();
   registry->emplace<Transform>(ship, 100.0f, 384.0f);
-  SDL_Texture *tex = GetTexture("Assets/Ship.png", gd->renderer);
-  int width, height;
-  SDL_QueryTexture(tex, nullptr, nullptr, &width, &height);
-
+  Texture tex = GetTexture("Assets/Ship.png");
   registry->emplace<Move>(ship, 0.0f, 0.0f);
-  registry->emplace<Sprite>(ship, tex, 100, width, height, 1.0f);
+  registry->emplace<Texture>(ship, tex);
 
   auto &inp = registry->emplace<Input>(ship);
   inp.maxFwdSpeed = 300.0f;
@@ -134,11 +166,8 @@ void LoadData(GameData *gd, entt::registry *registry) {
   for (int i = 0; i < numAsteroids; i++) {
 
     auto asteroid = registry->create();
-    SDL_Texture *tex = GetTexture("Assets/Asteroid.png", gd->renderer);
-    int width, height;
-    SDL_QueryTexture(tex, nullptr, nullptr, &width, &height);
-
-    registry->emplace<Sprite>(asteroid, tex, 100, width, height, 1.0f);
+    Texture tex = GetTexture("Assets/Asteroid.png");
+    registry->emplace<Texture>(asteroid, tex);
 
     Vector2 randPos =
         Random::GetVector(Vector2::Zero, Vector2(1024.0f, 768.0f));

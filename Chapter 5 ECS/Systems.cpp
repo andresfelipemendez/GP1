@@ -2,6 +2,7 @@
 #include "Components.h"
 #include "Math.h"
 #include "Game.h"
+#include "Rendering.h"
 
 void InputSystem(entt::registry* registry, const Uint8* keyState)
 {
@@ -31,20 +32,19 @@ void InputSystem(entt::registry* registry, const Uint8* keyState)
     });
 }
 
-void ShootingSystem(entt::registry* registry, SDL_Renderer* renderer,const Uint8* keyState)
+void ShootingSystem(entt::registry* registry, const Uint8* keyState)
 {
     auto shooter = registry->view<Shoot, const Transform>();
-    shooter.each([registry, renderer, keyState](Shoot& shoot, const Transform& pos) {
+    shooter.each([registry,  keyState](Shoot& shoot, const Transform& pos) {
         if (keyState[shoot.shootKey] && shoot.shootCooldown < 0.0f)
         {
             auto laser = registry->create();
             registry->emplace<Laser>(laser, 1.0f, 11.0f);
             registry->emplace<Transform>(laser, pos.x, pos.y, pos.rot);
             registry->emplace<Move>(laser, 0.0f, 800.0f);
-            SDL_Texture* tex = GetTexture("Assets/Laser.png", renderer);
-            int width, height;
-            SDL_QueryTexture(tex, nullptr, nullptr, &width, &height);
-            registry->emplace<Sprite>(laser, tex, 100, width, height, 1.0f);
+            Texture tex = GetTexture("Assets/Laser.png");
+            registry->emplace<Texture>(laser, tex);
+			registry->emplace<Shader>(laser, GetShader("Assets/Texture.vert", "Assets/Texture.frag"));
             shoot.shootCooldown = 0.5f;
         }
     });
@@ -128,24 +128,19 @@ void MovementSystem(entt::registry* registry, float deltaTime) {
     });
 }
 
-void RenderSystem(SDL_Renderer* renderer, entt::registry* registry)
-{
-    auto view = registry->view<const Sprite, const Transform>();
-    view.each([renderer](const auto& sprite, const auto& pos) {
-        SDL_Rect r;
-        r.w = static_cast<int>(sprite.texWidth * sprite.scale);
-        r.h = static_cast<int>(sprite.texHeight * sprite.scale);
-        r.x = static_cast<int>(pos.x - r.w / 2);
-        r.y = static_cast<int>(pos.y - r.h / 2);
-
-        SDL_RenderCopyEx(
-            renderer,
-            sprite.texture,
-            nullptr,
-            &r,
-            -Math::ToDegrees(pos.rot),
-            nullptr,
-            SDL_FLIP_NONE
+void RenderSystem(entt::registry* registry) {
+    auto view = registry->view<const Shader, const Texture, const Transform>();
+    view.each([](const Shader& shader, const Texture& sprite, const Transform& transform) {
+        Matrix4 scaleMat = Matrix4::CreateScale(
+            static_cast<float>(sprite.texWidth),
+            static_cast<float>(sprite.texHeight),
+            1.0f
         );
+
+        Matrix4 worldTransform = Matrix4::CreateScale(sprite.scale);
+        worldTransform *= Matrix4::CreateRotationZ(transform.rot);
+        worldTransform *= Matrix4::CreateTranslation(Vector3(transform.x, transform.y, 0.0f));
+
+        SetMatrixUniform(shader, "uWorldTransform", &worldTransform);
     });
 }

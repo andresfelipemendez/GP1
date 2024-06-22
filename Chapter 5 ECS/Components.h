@@ -1,53 +1,52 @@
 #pragma once
 
-struct Shader {
-
-};
-
-struct Sprite
-{
-	SDL_Texture* texture;
-	int drawOrder;
+struct Texture {
+	unsigned int textureID;
 	int texWidth;
 	int texHeight;
-	float scale;
+	float scale = 1;
 };
 
-struct Transform
-{
-	float x;
-	float y;
-	float rot;
+struct VertexArray {
+	unsigned int arrayID;
+};
+
+struct Shader {
+	unsigned int shaderProgram;
+};
+
+struct Transform {
+  float x;
+  float y;
+  float rot;
 };
 
 struct Shoot {
-	int shootKey;
-	float shootCooldown;
+  int shootKey;
+  float shootCooldown;
 };
 
-struct DestroyTag {
-
-};
+struct DestroyTag {};
 
 struct Laser {
-	float life;
-	float radius;
+  float life;
+  float radius;
 };
 
 struct Move {
-	float angularSpeed;
-	float forwardSpeed;
+  float angularSpeed;
+  float forwardSpeed;
 };
 
 struct Circle {
-	float radius;
+  float radius;
 };
 
 struct Input {
-	float maxFwdSpeed;
-	float maxAngSpeed;
-	int forwardKey;
-	int backKey;
-	int clockwiseKey;
-	int counterClockwiseKey;
+  float maxFwdSpeed;
+  float maxAngSpeed;
+  int forwardKey;
+  int backKey;
+  int clockwiseKey;
+  int counterClockwiseKey;
 };
