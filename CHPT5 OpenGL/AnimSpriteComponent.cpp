@@ -1,4 +1,5 @@
 #include "AnimSpriteComponent.h"
+#include "Texture.h"
 
 AnimSpriteComponent::AnimSpriteComponent(Actor* owner, int drawOrder):
 	SpriteComponent(owner,drawOrder),
@@ -21,7 +22,7 @@ void AnimSpriteComponent::Update(float deltaTime) {
 	}
 }
 
-void AnimSpriteComponent::SetAnimTexture(const std::vector<SDL_Texture*>& textures)
+void AnimSpriteComponent::SetAnimTexture(const std::vector<Texture*>& textures)
 {
 	mAnimTextures = textures;
 	if (mAnimTextures.size() > 0)

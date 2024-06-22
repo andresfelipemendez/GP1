@@ -7,6 +7,7 @@
 #include "Asteroid.h"
 #include "GL/glew.h"
 #include "Shader.h"
+#include "Texture.h"
 #include "VertexArray.h"
 
 Game::Game() :
@@ -164,6 +165,9 @@ void Game::GenerateOutput()
 	mSpriteShader->SetActive();
 	mSpriteVerts->SetActive();
 
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
 	for (auto sprite : mSprites)
 	{
 		sprite->Draw(mSpriteShader);
@@ -176,11 +180,11 @@ void Game::GenerateOutput()
 bool Game::LoadShaders()
 {
 	mSpriteShader = new Shader();
-	if (!mSpriteShader->Load("Shaders/Transform.vert", "Shaders/Basic.frag"))
+	if (!mSpriteShader->Load("Shaders/Sprite.vert", "Shaders/Sprite.frag"))
 	{
 		return false;
 	}
-
+	
 	mSpriteShader->SetActive();
 
 	Matrix4 viewProj = Matrix4::CreateSimpleViewProj(1024.f, 768.f);
@@ -227,41 +231,33 @@ void Game::UnloadData()
 
 	for (auto i : mTextures)
 	{
-		SDL_DestroyTexture(i.second);
+		i.second->Unload();
 	}
 	mTextures.clear();
 }
 
 
 
-SDL_Texture* Game::GetTexture(const std::string& fileName)
+Texture* Game::GetTexture(const std::string& fileName)
 {
-	SDL_Texture* tex = nullptr;
+	Texture* tex = nullptr;
 
-	//auto iter = mTextures.find(fileName);
-	//if (iter != mTextures.end()) 
-	//{
-	//	tex = iter->second;
-	//}
-	//else
-	//{
-	//	SDL_Surface* surf = IMG_Load(fileName.c_str());
-	//	if (!surf)
-	//	{
-	//		SDL_Log("Failed to load texture file %s", fileName.c_str());
-	//		return nullptr;
-	//	}
-
-	//	//tex = SDL_CreateTextureFromSurface(mRenderer, surf);
-	//	SDL_FreeSurface(surf);
-	//	if (!tex)
-	//	{
-	//		SDL_Log("Failed to convert surface to texture for %s", fileName.c_str());
-	//		return nullptr;
-	//	}
-
-	//	mTextures.emplace(fileName.c_str(), tex);
-	//}
+	auto iter = mTextures.find(fileName);
+	if (iter != mTextures.end()) 
+	{
+		tex = iter->second;
+	}
+	else
+	{
+		tex = new Texture();
+		if (tex->Load(fileName)) {
+			mTextures.emplace(fileName.c_str(), tex);
+		}
+		else {
+			delete tex;
+			tex = nullptr;
+		}	
+	}
 	return tex;
 }
 

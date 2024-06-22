@@ -72,7 +72,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>C:\Users\fmend\Development\GP1\Lib\glew-2.1.0\include;$(SolutionDir)..\Lib\SDL2_image\include;$(SolutionDir)..\Lib\SDL2\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)..\Lib\stb;$(SolutionDir)..\Lib\glew-2.1.0\include;$(SolutionDir)..\Lib\SDL2_image\include;$(SolutionDir)..\Lib\SDL2\include;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)..\Lib\SDL2_image\lib\x64;$(SolutionDir)..\Lib\SDL2\lib\x64;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -151,6 +151,7 @@
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="Ship.cpp" />
     <ClCompile Include="SpriteComponent.cpp" />
+    <ClCompile Include="Texture.cpp" />
     <ClCompile Include="VertexArray.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -170,6 +171,7 @@
     <ClInclude Include="Shader.h" />
     <ClInclude Include="Ship.h" />
     <ClInclude Include="SpriteComponent.h" />
+    <ClInclude Include="Texture.h" />
     <ClInclude Include="Vector2.h" />
     <ClInclude Include="VertexArray.h" />
   </ItemGroup>
