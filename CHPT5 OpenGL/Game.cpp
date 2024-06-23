@@ -213,7 +213,6 @@ void Game::CreateSpriteVerts()
 void Game::LoadData()
 {
 	mShip = new Ship(this);
-	mShip->SetPosition(Vector2(512.0f, 384.0f));
 	mShip->SetRotation(Math::PiOver2);
 
 	const int numAsteroids = 20;

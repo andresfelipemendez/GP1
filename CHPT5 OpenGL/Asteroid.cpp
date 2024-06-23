@@ -7,8 +7,8 @@
 
 Asteroid::Asteroid(Game* game) : Actor(game), mCircle(nullptr)
 {
-	Vector2 randPos = Random::GetVector(Vector2::Zero,
-		Vector2(1024.0f, 768.0f));
+	Vector2 randPos = Random::GetVector(Vector2(-512.0f, -384.0f),
+		Vector2(512.0f, 384.0f));
 
 	SetPosition(randPos);
 	SetRotation(Random::GetFloatRange(0.0f, Math::TwoPi));

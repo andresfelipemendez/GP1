@@ -36,12 +36,11 @@ public:
 	void SetRotation(float rotation) { mRotation = rotation;  mRecomputeWorldTransform = true; }
 
 	Vector2 GetForward() {
-		return Vector2(Math::Cos(mRotation), -Math::Sin(mRotation));
+		return Vector2(Math::Cos(mRotation), Math::Sin(mRotation));
 	}
 	void ComputeWorldTransform();
 	const Matrix4& GetWorldTransform() const { return mWorldTransform; }
 
-	Vector2 GetForward() const { return Vector2(Math::Cos(mRotation), Math::Sin(mRotation)); }
 
 	State GetState() const { return mState; }
 	void SetState(State state) { mState = state; }
