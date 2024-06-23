@@ -4,6 +4,7 @@
 #include "Game.h"
 #include "Rendering.h"
 
+#include "GL/glew.h"
 void InputSystem(entt::registry* registry, const Uint8* keyState)
 {
     auto input = registry->view<const Input, Move>();
@@ -44,7 +45,7 @@ void ShootingSystem(entt::registry* registry, const Uint8* keyState)
             registry->emplace<Move>(laser, 0.0f, 800.0f);
             Texture tex = GetTexture("Assets/Laser.png");
             registry->emplace<Texture>(laser, tex);
-			registry->emplace<Shader>(laser, GetShader("Assets/Texture.vert", "Assets/Texture.frag"));
+			registry->emplace<Shader>(laser, GetShader("Assets/Sprite.vert", "Assets/Sprite.frag"));
             shoot.shootCooldown = 0.5f;
         }
     });
@@ -128,19 +129,40 @@ void MovementSystem(entt::registry* registry, float deltaTime) {
     });
 }
 
-void RenderSystem(entt::registry* registry) {
+void RenderSystem(GameData* gd, entt::registry* registry) {
+    // Set the clear color to grey
+    glClearColor(0.86f, 0.86f, 0.86f, 1.0f);
+    // Clear the color buffer
+    glClear(GL_COLOR_BUFFER_BIT);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    // each entity should have it's own mesh?
+    auto vertexView = registry->view< VertexArray>();
+    vertexView.each([](VertexArray& vertexArray) {
+        SetVerticesActive(vertexArray.arrayID);
+	});
+
     auto view = registry->view<const Shader, const Texture, const Transform>();
-    view.each([](const Shader& shader, const Texture& sprite, const Transform& transform) {
+    view.each([](const Shader& shader, const Texture& texture, const Transform& transform) {
+
+		SetShaderActive(shader.shaderProgram);
+        
         Matrix4 scaleMat = Matrix4::CreateScale(
-            static_cast<float>(sprite.texWidth),
-            static_cast<float>(sprite.texHeight),
+            static_cast<float>(texture.texWidth),
+            static_cast<float>(texture.texHeight),
             1.0f
         );
 
-        Matrix4 worldTransform = Matrix4::CreateScale(sprite.scale);
+        Matrix4 worldTransform = Matrix4::CreateScale(texture.scale);
         worldTransform *= Matrix4::CreateRotationZ(transform.rot);
         worldTransform *= Matrix4::CreateTranslation(Vector3(transform.x, transform.y, 0.0f));
+		Matrix4 world = scaleMat * worldTransform;
+        SetMatrixUniform(shader, "uWorldTransform", &world);
+        SetTextureActive(texture.textureID);
 
-        SetMatrixUniform(shader, "uWorldTransform", &worldTransform);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
     });
+
+    SDL_GL_SwapWindow(gd->window);
 }

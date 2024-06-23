@@ -68,7 +68,6 @@ void CreateSpriteVerts(GameData *gd, entt::registry *registry) {
   };
 
   LoadMesh(registry, vertices, indices);
-
   //clang-format on
 }
 
@@ -118,21 +117,20 @@ void UpdateGame(GameData *gd, entt::registry *registry) {
 }
 
 void GenerateOutput(GameData *gd, entt::registry *registry) {
-  RenderSystem(registry);
+  RenderSystem(gd, registry);
 }
 
 std::unordered_map<std::string, Texture> mTextures;
 Texture GetTexture(const std::string &fileName) {
-
-  auto iter = mTextures.find(fileName);
-  if (iter != mTextures.end()) {
-	  return iter->second;
-  } 
+    auto iter = mTextures.find(fileName);
+    if (iter != mTextures.end()) {
+	    return iter->second;
+    } 
 	auto tex = LoadTexture(fileName);
-
-mTextures.emplace(fileName.c_str(), tex);
-return tex;
+    mTextures.emplace(fileName, tex);
+    return tex;
 }
+
 
 std::unordered_map<std::string, Shader> mShaders;
 Shader GetShader(const std::string& vertexShader, const std::string& fragmentShader) {
@@ -141,16 +139,25 @@ Shader GetShader(const std::string& vertexShader, const std::string& fragmentSha
 		return iter->second;
 	}
 	auto shader = LoadShader(vertexShader, fragmentShader);
+	mShaders.emplace(vertexShader + fragmentShader, shader);
+	return shader;
+
 }
 
 
 
 void LoadData(GameData *gd, entt::registry *registry) {
+    auto shader = GetShader("Assets/Sprite.vert", "Assets/Sprite.frag");
+
+    Matrix4 viewProj = Matrix4::CreateSimpleViewProj(1024.f, 768.f);
+	SetShaderActive(shader.shaderProgram);
+	SetMatrixUniform(shader, "uViewProj", &viewProj);
+
   auto ship = registry->create();
   registry->emplace<Transform>(ship, 100.0f, 384.0f);
-  Texture tex = GetTexture("Assets/Ship.png");
   registry->emplace<Move>(ship, 0.0f, 0.0f);
-  registry->emplace<Texture>(ship, tex);
+  registry->emplace<Shader>(ship, GetShader("Assets/Sprite.vert", "Assets/Sprite.frag"));
+  registry->emplace<Texture>(ship, GetTexture("Assets/Ship.png"));
 
   auto &inp = registry->emplace<Input>(ship);
   inp.maxFwdSpeed = 300.0f;
@@ -166,8 +173,8 @@ void LoadData(GameData *gd, entt::registry *registry) {
   for (int i = 0; i < numAsteroids; i++) {
 
     auto asteroid = registry->create();
-    Texture tex = GetTexture("Assets/Asteroid.png");
-    registry->emplace<Texture>(asteroid, tex);
+    registry->emplace<Shader>(asteroid, GetShader("Assets/Sprite.vert", "Assets/Sprite.frag"));
+    registry->emplace<Texture>(asteroid, GetTexture("Assets/Asteroid.png"));
 
     Vector2 randPos =
         Random::GetVector(Vector2::Zero, Vector2(1024.0f, 768.0f));

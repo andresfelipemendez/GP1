@@ -18,7 +18,7 @@ void LoadMesh(entt::registry *registry, std::vector<float> vertices,
 
   glGenBuffers(1, &vertexBuffer);
   glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
-  glBufferData(GL_ARRAY_BUFFER, vertices.size() * 5 * sizeof(float),
+  glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float),
                vertices.data(), GL_STATIC_DRAW);
 
   glGenBuffers(1, &indexBuffer);
@@ -36,30 +36,45 @@ void LoadMesh(entt::registry *registry, std::vector<float> vertices,
 }
 
 Texture LoadTexture(const std::string& fileName) {
-    Texture tex;
+	Texture t;
     int channels = 0;
-    unsigned char* image = stbi_load(fileName.c_str(), &tex.texWidth, &tex.texHeight, &channels, 0);
+    unsigned char* image = stbi_load(fileName.c_str(), &t.texWidth, &t.texHeight, &channels, 0);
     if (!image) {
         SDL_Log("STB failed to load image %s: %s", fileName.c_str(), stbi_failure_reason());
     }
 
     int format = channels == 4? GL_RGBA:GL_RGB;
     
-    glGenTextures(1, &tex.textureID);
-    glBindTexture(GL_TEXTURE_2D, tex.textureID);
-
-    glTexImage2D(GL_TEXTURE_2D, 0, format, tex.texWidth, tex.texWidth, 0, format, GL_UNSIGNED_BYTE, image);
+    glGenTextures(1, &t.textureID);
+    glBindTexture(GL_TEXTURE_2D, t.textureID);
+	
+    glTexImage2D(GL_TEXTURE_2D, 0, format, t.texWidth, t.texWidth, 0, format, GL_UNSIGNED_BYTE, image);
     stbi_image_free(image);
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-    return tex;
+    return t;
+}
+
+void SetTextureActive(unsigned int textureID) {
+	glBindTexture(GL_TEXTURE_2D, textureID);
 }
 
 void SetShaderActive(unsigned int shaderProgram) {
 	glUseProgram(shaderProgram);
 }
+
+void SetVerticesActive(unsigned int vertexID)
+{
+	glBindVertexArray(vertexID);
+}
+
+unsigned int GetVertexArray()
+{
+	return 0;
+}
+
 
 void SetMatrixUniform(Shader shader, const char* uniformName, const Matrix4* matrix) {
     GLuint loc = glGetUniformLocation(shader.shaderProgram, uniformName);

@@ -27,3 +27,4 @@ void UnloadData(GameData *gd);
 
 Shader GetShader(const std::string& vertexShader, const std::string& fragmentShader);
 Texture GetTexture(const std::string &fileName);
+unsigned int GetVertexArray();

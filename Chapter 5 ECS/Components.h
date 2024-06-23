@@ -9,6 +9,7 @@ struct Texture {
 
 struct VertexArray {
 	unsigned int arrayID;
+	size_t numVerts;
 };
 
 struct Shader {
