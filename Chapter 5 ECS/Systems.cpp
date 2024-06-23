@@ -94,7 +94,7 @@ void MovementSystem(entt::registry *registry, float deltaTime) {
           pos.y = _pos.y;
           Vector2 forward;
           forward.x = Math::Cos(_pos.rot);
-          forward.y = -Math::Sin(_pos.rot);
+          forward.y = Math::Sin(_pos.rot);
 
           pos += forward * move.forwardSpeed * deltaTime;
 

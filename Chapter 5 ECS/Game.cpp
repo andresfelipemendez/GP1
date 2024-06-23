@@ -151,7 +151,7 @@ void LoadData(GameData *gd, entt::registry *registry) {
 	SetMatrixUniform(shader, "uViewProj", &viewProj);
 
   auto ship = registry->create();
-  registry->emplace<Transform>(ship, 0.f, 0.f);
+  registry->emplace<Transform>(ship, 0.f, 0.f,0.0f);
   registry->emplace<Move>(ship, 0.0f, 0.0f);
   registry->emplace<Shader>(ship, GetShader("Assets/Sprite.vert", "Assets/Sprite.frag"));
   registry->emplace<Texture>(ship, GetTexture("Assets/Ship.png"));
@@ -174,7 +174,8 @@ void LoadData(GameData *gd, entt::registry *registry) {
     registry->emplace<Texture>(asteroid, GetTexture("Assets/Asteroid.png"));
 
     Vector2 randPos =
-        Random::GetVector(Vector2::Zero, Vector2(1024.0f, 768.0f));
+        Random::GetVector(Vector2(-512.0f, -384.0f),
+            Vector2(512.0f, 384.0f));
 
     auto &pos = registry->emplace<Transform>(asteroid);
     pos.x = randPos.x;
