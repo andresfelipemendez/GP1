@@ -144,12 +144,9 @@ Shader GetShader(const std::string& vertexShader, const std::string& fragmentSha
 
 }
 
-
-
 void LoadData(GameData *gd, entt::registry *registry) {
-    auto shader = GetShader("Assets/Sprite.vert", "Assets/Sprite.frag");
-
-    Matrix4 viewProj = Matrix4::CreateSimpleViewProj(1024.f, 768.f);
+   auto shader = GetShader("Assets/Sprite.vert", "Assets/Sprite.frag");
+   Matrix4 viewProj = Matrix4::CreateSimpleViewProj(1024.f, 768.f);
 	SetShaderActive(shader.shaderProgram);
 	SetMatrixUniform(shader, "uViewProj", &viewProj);
 
