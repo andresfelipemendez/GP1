@@ -7,11 +7,11 @@
 
 Asteroid::Asteroid(Game* game) : Actor(game), mCircle(nullptr)
 {
-	Vector2 randPos = Random::GetVector(Vector2::Zero,
-		Vector2(1024.0f, 768.0f));
+	Vector2 randPos = Random::GetVector(Vector2(-512.0f, -384.0f),
+		Vector2(512.0f, 384.0f));
 
-	mPosition = randPos;
-	mRotation = Random::GetFloatRange(0.0f, Math::TwoPi);
+	SetPosition(randPos);
+	SetRotation(Random::GetFloatRange(0.0f, Math::TwoPi));
 
 	SpriteComponent* sc = new SpriteComponent(this);
 	sc->SetTexture(game->GetTexture("Assets/Asteroid.png"));
@@ -27,5 +27,5 @@ Asteroid::Asteroid(Game* game) : Actor(game), mCircle(nullptr)
 
 Asteroid::~Asteroid()
 {
-	mGame->RemoveAsteroid(this);
+	GetGame()->RemoveAsteroid(this);
 }

@@ -19,7 +19,7 @@ public:
 	void AddSprite(class SpriteComponent* sprite);
 	void RemoveSprite(class SpriteComponent* sprite);
 
-	SDL_Texture* GetTexture(const std::string& fileName);
+	class Texture* GetTexture(const std::string& fileName);
 
 	void AddAsteroid(class Asteroid* ast);
 	void RemoveAsteroid(class Asteroid* ast);
@@ -29,10 +29,15 @@ public:
 	void ProcessInput();
 	void UpdateGame();
 	void GenerateOutput();
+	bool LoadShaders();
 	void LoadData();
 	void UnloadData();
+	void CreateSpriteVerts();
 
-	std::unordered_map<std::string, SDL_Texture*> mTextures;
+	class Shader* mSpriteShader = nullptr;
+	class VertexArray* mSpriteVerts = nullptr;
+
+	std::unordered_map<std::string, class Texture*> mTextures;
 
 	std::vector<class Actor*> mActors;
 
@@ -41,7 +46,7 @@ public:
 	std::vector<class SpriteComponent*> mSprites;
 
 	SDL_Window* mWindow = nullptr;
-	SDL_Renderer* mRenderer = nullptr;
+	SDL_GLContext mContext;
 	Uint32 mTicksCount = 0;
 	bool mIsRunning = false;
 	bool mUpdatingActors = false;

@@ -12,29 +12,29 @@ MoveComponent::MoveComponent(Actor* owner, int updateOrder):
 void MoveComponent::Update(float deltaTime)
 {
 	if (!Math::NearZero(mAngularSpeed)) {
-		float rot = mOwner->mRotation;
+		float rot = mOwner->GetRotation();
 		rot += mAngularSpeed * deltaTime;
-		mOwner->mRotation = rot;
+		mOwner->SetRotation( rot);
 	}
 
 	if (!Math::NearZero(mForwardSpeed))
 	{
-		Vector2 pos = mOwner->mPosition;
+		Vector2 pos = mOwner->GetPosition();
 		pos += mOwner->GetForward() * mForwardSpeed * deltaTime;
 
-		if (pos.x < 0.0F) {
-			pos.x = 1022.0f;
+		if (pos.x < -512.0f) {
+			pos.x = 510.0f;
 		}
-		else if (pos.x > 1024.0f) {
-			pos.x = 2.0f;
+		else if (pos.x > 512.0f) {
+			pos.x = -510.0f;;
 		}
 
-		if (pos.y < 0.0F) {
-			pos.y = 766.0f;
+		if (pos.y < -384.0f) {
+			pos.y = 382.0f;
 		}
-		else if (pos.y > 768) {
-			pos.y = 2.0f;
+		else if (pos.y > 384.0f) {
+			pos.y = -382.0f;
 		}
-		mOwner->mPosition = pos;
+		mOwner->SetPosition(  pos);
 	}
 }
