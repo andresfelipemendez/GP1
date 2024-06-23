@@ -35,6 +35,7 @@ void LoadMesh(entt::registry *registry, std::vector<float> vertices,
 }
 
 Texture LoadTexture(const std::string &fileName) {
+  stbi_set_flip_vertically_on_load(true);
   Texture t;
   int channels = 0;
   unsigned char *image =

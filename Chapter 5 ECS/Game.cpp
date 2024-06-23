@@ -151,7 +151,7 @@ void LoadData(GameData *gd, entt::registry *registry) {
 	SetMatrixUniform(shader, "uViewProj", &viewProj);
 
   auto ship = registry->create();
-  registry->emplace<Transform>(ship, 100.0f, 384.0f);
+  registry->emplace<Transform>(ship, 0.f, 0.f);
   registry->emplace<Move>(ship, 0.0f, 0.0f);
   registry->emplace<Shader>(ship, GetShader("Assets/Sprite.vert", "Assets/Sprite.frag"));
   registry->emplace<Texture>(ship, GetTexture("Assets/Ship.png"));
