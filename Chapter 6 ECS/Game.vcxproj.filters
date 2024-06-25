@@ -62,11 +62,17 @@
     <ClInclude Include="cgltf.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="json.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CopyFileToFolders Include="..\Lib\SDL2\lib\x64\SDL2.dll" />
     <CopyFileToFolders Include="..\Lib\SDL2_image\lib\x64\SDL2_image.dll" />
     <CopyFileToFolders Include="..\Lib\glew-2.1.0\bin\Release\x64\glew32.dll" />
     <CopyFileToFolders Include="..\Lib\toml\lib\toml.dll" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Assets\scene.json" />
   </ItemGroup>
 </Project>

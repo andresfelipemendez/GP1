@@ -1,5 +1,12 @@
 #pragma once
 
+struct Camera {
+	float fov;
+	float aspect;
+	float near;
+	float far;
+};
+
 struct Texture {
 	unsigned int textureID;
 	int texWidth;
