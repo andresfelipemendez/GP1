@@ -9,8 +9,12 @@
 #include "Systems.h"
 #include <SDL.h>
 #include <SDL_image.h>
+#include "AssetLoader.h"
 
 bool Initialize(GameData *gd, entt::registry *registry) {
+
+	LoadScene();
+
   if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) != 0) {
     SDL_Log("Unable to initialize SDL: %s", SDL_GetError());
     return false;
