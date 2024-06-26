@@ -29,7 +29,7 @@ void InputSystem(entt::registry *registry, const Uint8 *keyState) {
 }
 
 void ShootingSystem(entt::registry *registry, const Uint8 *keyState) {
-  auto shooter = registry->view<Shoot, const Transform>();
+  /*auto shooter = registry->view<Shoot, const Transform>();
   shooter.each([registry, keyState](Shoot &shoot, const Transform &pos) {
     if (keyState[shoot.shootKey] && shoot.shootCooldown < 0.0f) {
       auto laser = registry->create();
@@ -42,11 +42,11 @@ void ShootingSystem(entt::registry *registry, const Uint8 *keyState) {
           laser, GetShader("Assets/Sprite.vert", "Assets/Sprite.frag"));
       shoot.shootCooldown = 0.5f;
     }
-  });
+  });*/
 }
 
 void CollisionSystem(entt::registry *registry, float deltaTime) {
-  registry->view<Shoot>().each(
+  /*registry->view<Shoot>().each(
       [deltaTime](Shoot &shoot) { shoot.shootCooldown -= deltaTime; });
 
   auto laserBeams = registry->view<Laser>();
@@ -76,11 +76,11 @@ void CollisionSystem(entt::registry *registry, float deltaTime) {
   }
 
   auto destroyEntities = registry->view<const DestroyTag>();
-  registry->destroy(destroyEntities.begin(), destroyEntities.end());
+  registry->destroy(destroyEntities.begin(), destroyEntities.end());*/
 }
 
 void MovementSystem(entt::registry *registry, float deltaTime) {
-  registry->view<const Move, Transform>().each(
+  /*registry->view<const Move, Transform>().each(
       [deltaTime](const Move &move, Transform &_pos) {
         if (!Math::NearZero(move.angularSpeed)) {
           float rot = _pos.rot;
@@ -113,7 +113,7 @@ void MovementSystem(entt::registry *registry, float deltaTime) {
           _pos.x = pos.x;
           _pos.y = pos.y;
         }
-      });
+      });*/
 }
 
 void RenderSystem(GameData *gd, entt::registry *registry) {
@@ -127,9 +127,9 @@ void RenderSystem(GameData *gd, entt::registry *registry) {
   vertexView.each(
       [](VertexArray &vertexArray) { SetVerticesActive(vertexArray.arrayID); });
 
-  auto view = registry->view<const Shader, const Texture, const Transform>();
-  view.each([](const Shader &shader, const Texture &texture,
-               const Transform &transform) {
+  auto view = registry->view<const Shader, const Texture>();
+  view.each([](const Shader &shader, const Texture &texture
+               ) {
     SetShaderActive(shader.shaderProgram);
 
     Matrix4 scaleMat =
@@ -137,9 +137,9 @@ void RenderSystem(GameData *gd, entt::registry *registry) {
                              static_cast<float>(texture.texHeight), 1.0f);
 
     Matrix4 worldTransform = Matrix4::CreateScale(texture.scale);
-    worldTransform *= Matrix4::CreateRotationZ(transform.rot);
-    worldTransform *=
-        Matrix4::CreateTranslation(Vector3(transform.x, transform.y, 0.0f));
+   // worldTransform *= Matrix4::CreateRotationZ(transform.rot);
+ /*   worldTransform *=
+        Matrix4::CreateTranslation(Vector3(transform.x, transform.y, 0.0f));*/
     Matrix4 world = scaleMat * worldTransform;
     SetMatrixUniform(shader, "uWorldTransform", &world);
     SetTextureActive(texture.textureID);

@@ -1,5 +1,6 @@
 {
-  "entities":[
+  "version": "00001",
+  "entities": [
     {
       "name": "camera",
       "components": [
@@ -8,6 +9,14 @@
           "fov": 45,
           "near": 0.1,
           "far": 1000
+        },
+        {
+          "type": "translation",
+          "position": [ 0, 0, 5 ]
+        },
+        {
+          "type": "rotation",
+          "euler": [ 45, 0, 0 ]
         }
       ]
     }

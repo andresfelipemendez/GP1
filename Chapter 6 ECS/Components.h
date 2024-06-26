@@ -1,4 +1,5 @@
 #pragma once
+#include "Math.h"
 
 struct Camera {
 	float fov;
@@ -23,10 +24,16 @@ struct Shader {
 	unsigned int shaderProgram;
 };
 
-struct Transform {
-  float x;
-  float y;
-  float rot;
+struct Translation {
+	Vector3 position;
+};
+
+struct Rotation {
+	Quaternion rotation;
+};
+
+struct Scale {
+	float scale;
 };
 
 struct Shoot {

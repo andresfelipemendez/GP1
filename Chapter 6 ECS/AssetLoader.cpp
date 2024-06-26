@@ -72,6 +72,32 @@ void LoadScene(entt::registry* registry, const std::string& path) {
                     std::cerr << "Camera component skipped due to missing data." << std::endl;
                 }
             }
+
+            if (type == "translation") {
+                if (component["position"].is_array() && component["position"].size() == 3) {
+                    auto& pos = registry->emplace<Translation>(e);
+					pos.position.x = component["position"][0];
+					pos.position.y = component["position"][1];
+					pos.position.z = component["position"][2];
+
+                }
+                else {
+                    std::cerr << "Translation component skipped due to missing data." << std::endl;
+                }
+            }
+
+            if (type == "rotation") {
+                if (component["euler"].is_array() && component["euler"].size() == 3) {
+					Vector3 rotEuler;
+                    rotEuler.x = component["euler"][0];
+                    rotEuler.y = component["euler"][1];
+                    rotEuler.z = component["euler"][2];
+                    auto& rot = registry->emplace<Rotation>(e);
+				}
+				else {
+					std::cerr << "Rotation component skipped due to missing data." << std::endl;
+                }
+            }
         }
     }
 }
