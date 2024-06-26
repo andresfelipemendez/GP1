@@ -5,8 +5,8 @@
 struct Camera {
 	float fov;
 	float aspect;
-	float near;
-	float far;
+	float nearPlane;
+	float farPlane;
 };
 
 struct Texture {

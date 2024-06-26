@@ -12,10 +12,10 @@
 #include "json.hpp"
 using json = nlohmann::json;
 
+#define TINYGLTF_IMPLEMENTATION
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "tiny_gltf.h"
 
-#define TINYGLTF_IMPLEMENTATION
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
@@ -77,14 +77,14 @@ void LoadScene(entt::registry* registry, const std::string& path) {
 
             if (type == "camera") {
                 auto fov = get_json_value<float>(component, "fov");
-                auto near = get_json_value<float>(component, "near");
-                auto far = get_json_value<float>(component, "far");
+                auto _near = get_json_value<float>(component, "near");
+                auto _far = get_json_value<float>(component, "far");
 
-                if (fov && near && far) {
+                if (fov && _near && _far) {
                     auto& cam = registry->emplace<Camera>(e);
                     cam.fov = *fov;
-                    cam.near = *near;
-                    cam.far = *far;
+                    cam.nearPlane = *_near;
+                    cam.farPlane = *_far;
                 }
                 else {
                     std::cerr << "Camera component skipped due to missing data." << std::endl;
