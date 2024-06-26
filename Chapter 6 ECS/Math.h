@@ -680,6 +680,8 @@ public:
 		w = Math::Cos(angle / 2.0f);
 	}
 
+	
+
 	// Directly set the internal components
 	void Set(float inX, float inY, float inZ, float inW)
 	{
@@ -713,6 +715,23 @@ public:
 		y /= length;
 		z /= length;
 		w /= length;
+	}
+
+	static Quaternion FromEuler(const Vector3& euler)
+	{
+		float c1 = Math::Cos(euler.z / 2);
+		float c2 = Math::Cos(euler.y / 2);
+		float c3 = Math::Cos(euler.x / 2);
+		float s1 = Math::Sin(euler.z / 2);
+		float s2 = Math::Sin(euler.y / 2);
+		float s3 = Math::Sin(euler.x / 2);
+
+		Quaternion q;
+		q.x = s1 * c2 * c3 + c1 * s2 * s3;
+		q.y = c1 * s2 * c3 - s1 * c2 * s3;
+		q.z = c1 * c2 * s3 - s1 * s2 * c3;
+		q.w = c1 * c2 * c3 + s1 * s2 * s3;
+		return q;
 	}
 
 	// Normalize the provided quaternion

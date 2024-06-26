@@ -50,8 +50,7 @@ bool Initialize(GameData *gd, entt::registry *registry) {
   Random::Init();
 
   LoadScene(registry, "Assets/scene.json");
-  LoadData(gd, registry);
-
+ 
   gd->ticksCount = SDL_GetTicks();
   gd->isRunning = true;
   return true;
@@ -149,47 +148,7 @@ Shader GetShader(const std::string& vertexShader, const std::string& fragmentSha
 }
 
 void LoadData(GameData *gd, entt::registry *registry) {
-   auto shader = GetShader("Assets/Sprite.vert", "Assets/Sprite.frag");
-   Matrix4 viewProj = Matrix4::CreateSimpleViewProj(1024.f, 768.f);
-	SetShaderActive(shader.shaderProgram);
-	SetMatrixUniform(shader, "uViewProj", &viewProj);
-
-  auto ship = registry->create();
-  //registry->emplace<Transform>(ship, 0.f, 0.f,0.0f);
-  registry->emplace<Move>(ship, 0.0f, 0.0f);
-  registry->emplace<Shader>(ship, GetShader("Assets/Sprite.vert", "Assets/Sprite.frag"));
-  registry->emplace<Texture>(ship, GetTexture("Assets/Ship.png"));
-
-  auto &inp = registry->emplace<Input>(ship);
-  inp.maxFwdSpeed = 300.0f;
-  inp.maxAngSpeed = Math::TwoPi;
-  inp.forwardKey = SDL_SCANCODE_W;
-  inp.backKey = SDL_SCANCODE_S;
-  inp.clockwiseKey = SDL_SCANCODE_A;
-  inp.counterClockwiseKey = SDL_SCANCODE_D;
-
-  registry->emplace<Shoot>(ship, SDL_SCANCODE_SPACE, 0.5f);
-
-  const int numAsteroids = 20;
-  for (int i = 0; i < numAsteroids; i++) {
-
-    auto asteroid = registry->create();
-    registry->emplace<Shader>(asteroid, GetShader("Assets/Sprite.vert", "Assets/Sprite.frag"));
-    registry->emplace<Texture>(asteroid, GetTexture("Assets/Asteroid.png"));
-
-    Vector2 randPos =
-        Random::GetVector(Vector2(-512.0f, -384.0f),
-            Vector2(512.0f, 384.0f));
-
-    //auto &pos = registry->emplace<Transform>(asteroid);
-    /*pos.x = randPos.x;
-    pos.y = randPos.y;
-    pos.rot = Random::GetFloatRange(0.0f, Math::TwoPi);*/
-
-    registry->emplace<Move>(asteroid, 0.0f, 150.0f);
-
-    registry->emplace<Circle>(asteroid, 40.0f);
-  }
+	LoadScene(registry, "Assets/scene.json");
 }
 
 void UnloadData(GameData *gd) {}

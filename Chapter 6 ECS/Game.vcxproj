@@ -144,7 +144,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AssetLoader.h" />
-    <ClInclude Include="cgltf.h" />
     <ClInclude Include="Components.h" />
     <ClInclude Include="Game.h" />
     <ClInclude Include="json.hpp" />

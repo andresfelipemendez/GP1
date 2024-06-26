@@ -1,6 +1,7 @@
 #pragma once
 #include "Math.h"
 
+
 struct Camera {
 	float fov;
 	float aspect;
@@ -13,6 +14,11 @@ struct Texture {
 	int texWidth;
 	int texHeight;
 	float scale = 1;
+};
+
+struct Mesh {
+	unsigned int arrayID;
+	size_t numVerts;
 };
 
 struct VertexArray {

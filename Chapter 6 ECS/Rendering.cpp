@@ -4,8 +4,8 @@
 #include "SDL.h"
 #include <fstream>
 #include <sstream>
-#define STB_IMAGE_IMPLEMENTATION
-#include <stb_image.h>
+#include "AssetLoader.h"
+
 
 void LoadMesh(entt::registry *registry, std::vector<float> vertices,
               std::vector<unsigned int> indices) {
@@ -35,25 +35,17 @@ void LoadMesh(entt::registry *registry, std::vector<float> vertices,
 }
 
 Texture LoadTexture(const std::string &fileName) {
-  stbi_set_flip_vertically_on_load(true);
+  
   Texture t;
-  int channels = 0;
-  unsigned char *image =
-      stbi_load(fileName.c_str(), &t.texWidth, &t.texHeight, &channels, 0);
-  if (!image) {
-    SDL_Log("STB failed to load image %s: %s", fileName.c_str(),
-            stbi_failure_reason());
-  }
-
-  int format = channels == 4 ? GL_RGBA : GL_RGB;
+  
+  ImageFile image(fileName);
 
   glGenTextures(1, &t.textureID);
   glBindTexture(GL_TEXTURE_2D, t.textureID);
 
-  glTexImage2D(GL_TEXTURE_2D, 0, format, t.texWidth, t.texWidth, 0, format,
-               GL_UNSIGNED_BYTE, image);
-  stbi_image_free(image);
-
+  glTexImage2D(GL_TEXTURE_2D, 0, image.channels, image.width, image.height, 0, image.channels,
+               GL_UNSIGNED_BYTE, image.data);
+ 
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 

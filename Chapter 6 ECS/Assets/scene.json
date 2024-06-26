@@ -19,6 +19,23 @@
           "euler": [ 45, 0, 0 ]
         }
       ]
+    },
+    {
+      "name": "cube",
+      "components": [
+        {
+          "type":"mesh",
+          "file": "bed.glb"
+        },
+        {
+          "type": "material",
+          "color": [ 1, 0, 0 ]
+        },
+        {
+          "type": "translation",
+          "position": [ 0, 0, 0 ]
+        }
+      ]
     }
   ]
 }

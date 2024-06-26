@@ -127,19 +127,21 @@ void RenderSystem(GameData *gd, entt::registry *registry) {
   vertexView.each(
       [](VertexArray &vertexArray) { SetVerticesActive(vertexArray.arrayID); });
 
-  auto view = registry->view<const Shader, const Texture>();
-  view.each([](const Shader &shader, const Texture &texture
+  auto view = registry->view<const Shader, const Texture, const Translation, const Rotation>();
+  view.each([](const Shader& shader, const Texture& texture, const Translation& transform, const Rotation& rotation
                ) {
     SetShaderActive(shader.shaderProgram);
 
-    Matrix4 scaleMat =
-        Matrix4::CreateScale(static_cast<float>(texture.texWidth),
-                             static_cast<float>(texture.texHeight), 1.0f);
+    Matrix4 scaleMat = Matrix4::CreateScale
+    (
+        static_cast<float>(texture.texWidth),
+        static_cast<float>(texture.texHeight), 
+        1.0f
+    );
 
     Matrix4 worldTransform = Matrix4::CreateScale(texture.scale);
-   // worldTransform *= Matrix4::CreateRotationZ(transform.rot);
- /*   worldTransform *=
-        Matrix4::CreateTranslation(Vector3(transform.x, transform.y, 0.0f));*/
+    worldTransform *= Matrix4::CreateFromQuaternion(rotation.rotation);
+    worldTransform *= Matrix4::CreateTranslation(transform.position);
     Matrix4 world = scaleMat * worldTransform;
     SetMatrixUniform(shader, "uWorldTransform", &world);
     SetTextureActive(texture.textureID);
