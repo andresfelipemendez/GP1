@@ -7,10 +7,8 @@
 #include <iostream>
 #include <toml.h>
 #include <SDL.h>
-
+#include <vector>
 #include <fstream>
-#include "json.hpp"
-using json = nlohmann::json;
 
 #define TINYGLTF_IMPLEMENTATION
 #define STB_IMAGE_WRITE_IMPLEMENTATION
@@ -18,7 +16,7 @@ using json = nlohmann::json;
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
-
+#include "Rendering.h"
 
 ImageFile::ImageFile(const std::string& fileName)
 {
@@ -119,9 +117,12 @@ void LoadScene(entt::registry* registry, const std::string& path) {
             }
 
 			if (type == "mesh") {
-                if (component["path"].is_string()) {
+                if (component["filePath"].is_string()) {
                     auto& mesh = registry->emplace<Mesh>(e);
-					LoadMesh(component["path"]);
+                    std::string path = component["filePath"];
+                    path = "Assets/" + path;
+                    auto vertexArray = LoadMesh(path);
+                    registry->emplace<Mesh>(e, vertexArray);
 				}
 				else {
 					std::cerr << "Mesh component skipped due to missing data." << std::endl;
@@ -132,7 +133,8 @@ void LoadScene(entt::registry* registry, const std::string& path) {
     }
 }
 
-void LoadMesh(const std::string& path) {
+
+Mesh LoadMesh(const std::string& path) {
 	tinygltf::Model model;
 	tinygltf::TinyGLTF loader;
 	std::string err;
@@ -157,58 +159,59 @@ void LoadMesh(const std::string& path) {
 
 	if (!ret) {
 		std::cerr << "Failed to load glTF file." << std::endl;
-		return;
+        return {};
 	}
 
-	if (model.meshes.empty()) {
-		std::cerr << "No meshes found in glTF file." << std::endl;
-		return;
-	}
+    for (const auto& mesh : model.meshes) {
+        for (const auto& primitive : mesh.primitives) {            
+            const tinygltf::Accessor& indexAccesor = model.accessors[primitive.indices];
+            const tinygltf::BufferView& indexBufferView = model.bufferViews[indexAccesor.bufferView];
+            const tinygltf::Buffer& indexBuffer = model.buffers[indexBufferView.buffer];
 
-	auto& mesh = model.meshes[0];
-	if (mesh.primitives.empty()) {
-		std::cerr << "No primitives found in mesh." << std::endl;
-		return;
-	}
+            std::vector<uint32_t> indices(indexAccesor.count);
+            std::vector<float> vertices;
 
-	auto& primitive = mesh.primitives[0];
-	if (primitive.attributes.empty()) {
-		std::cerr << "No attributes found in primitive." << std::endl;
-		return;
-	}
+            memcpy(indices.data(), &indexBuffer.data[indexBufferView.byteOffset + indexAccesor.byteOffset],
+                indexAccesor.count * sizeof(uint32_t));
 
-	auto& attribs = primitive.attributes;
-	if (attribs.find("POSITION") == attribs.end()) {
-		std::cerr << "No position attribute found in primitive." << std::endl;
-		return;
-	}
+            // Determine the stride and offset for each attribute
+            std::unordered_map<std::string, size_t> attributeOffsets;
+            uint32_t stride = 0;
 
-	auto& accessor = model.accessors[attribs["POSITION"]];
-	auto& bufferView = model.bufferViews[accessor.bufferView];
-	auto& buffer = model.buffers[bufferView.buffer];
+            for (const auto& attrib : primitive.attributes) {
+                const tinygltf::Accessor& accessor = model.accessors[attrib.second];
+                attributeOffsets[attrib.first] = stride;
+                stride += accessor.type * sizeof(float);
+            }
 
-	if (bufferView.byteStride == 0) {
-		std::cerr << "No byte stride found in buffer view." << std::endl;
-		return;
-	}
+            // Allocate vertex buffer
+            size_t vertexCount = model.accessors[primitive.attributes.at("POSITION")].count;
+            vertices.resize(vertexCount * stride);
 
-	if (bufferView.byteOffset == 0) {
-		std::cerr << "No byte offset found in buffer view." << std::endl;
-		return;
-	}
+            // Copy attribute data to vertex buffer
+            for (const auto& attrib : primitive.attributes) {
+                const tinygltf::Accessor& accessor = model.accessors[attrib.second];
+                const tinygltf::BufferView& bufferView = model.bufferViews[accessor.bufferView];
+                const tinygltf::Buffer& buffer = model.buffers[bufferView.buffer];
 
-	if (bufferView.byteLength == 0) {
-		std::cerr << "No byte length found in buffer view." << std::endl;
-		return;
-	}
+                size_t elementSize = accessor.type * sizeof(float);
+                size_t offset = attributeOffsets[attrib.first];
 
-	if (buffer.data.empty()) {
-		std::cerr << "No data found in buffer." << std::endl;
-		return;
-	}
+                for (size_t i = 0; i < vertexCount; ++i) {
+                    memcpy(&vertices[i * stride + offset],
+                        &buffer.data[bufferView.byteOffset + accessor.byteOffset + i * elementSize],
+                        elementSize);
+                }
+            }
 
-    if (accessor.count == 0) {
-        std::cerr << "No count found in accessor." << std::endl;
-        return;
+            if (stride == 32) {
+                return {
+                    UploadMeshToGPU(indices, vertices, stride),
+                    vertexCount
+                };
+            }
+        }
     }
+
+
 }

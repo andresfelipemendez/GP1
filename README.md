@@ -6,6 +6,7 @@ In my adaptation, I emphasize Data-Oriented Design (DOD) principles to optimize 
 
 This project not only serves as a comprehensive exercise in applying these advanced concepts but also acts as a key portfolio piece to illustrate my capabilities in game development. Notable modifications include the replacement of the SOIL library with stb_image for better support and the use of JSON for scene descriptions, which enhances flexibility and version control compatibility during the game development process.
 
+https://github.com/gameprogcpp/code
 
 ## Table of Contents
 

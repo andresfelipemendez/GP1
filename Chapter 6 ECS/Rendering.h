@@ -6,6 +6,8 @@
 
 void LoadMesh(entt::registry *registry, std::vector<float> vertices,
               std::vector<unsigned int> indices);
+uint32_t UploadMeshToGPU(std::vector<uint32_t> indices, std::vector<float> vertices,
+    size_t stride);
 
 Texture LoadTexture(const std::string& fileName);
 Shader LoadShader(const std::string& vertexShader, const std::string& fragmentShader);
