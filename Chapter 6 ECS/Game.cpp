@@ -3,7 +3,7 @@
 #include "GL/glew.h"
 #include "Math.h"
 #include "Random.h"
-#include "Rendering.h"
+#include "Renderer.h"
 #include "SDL_stdinc.h"
 #include "SDL_video.h"
 #include "Systems.h"

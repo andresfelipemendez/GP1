@@ -11,7 +11,8 @@ uint32_t UploadMeshToGPU(std::vector<uint32_t> indices, std::vector<float> verti
 
 Texture LoadTexture(const std::string& fileName);
 Shader LoadShader(const std::string& vertexShader, const std::string& fragmentShader);
-
+void DrawOpaque();
+void DrawMesh(size_t numVertices);
 void SetShaderActive(unsigned int shaderProgram);
 void SetVerticesActive(unsigned int vertexID);
 void SetTextureActive(unsigned int textureID);

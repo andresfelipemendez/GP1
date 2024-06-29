@@ -1,4 +1,4 @@
-#include "Rendering.h"
+#include "Renderer.h"
 #include "GL/glew.h"
 #include "Math.h"
 #include "SDL.h"
@@ -180,4 +180,20 @@ Shader LoadShader(const std::string &vertexShader,
   }
 
   return Shader{mShaderProgram};
+}
+
+void DrawOpaque()
+{
+
+}
+
+void BeginDrawTransparent() {
+    glClearColor(0.86f, 0.86f, 0.86f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+}
+
+void DrawMesh(size_t numVertices) {
+    glDrawElements(GL_TRIANGLES, numVertices, GL_UNSIGNED_INT, nullptr);
 }

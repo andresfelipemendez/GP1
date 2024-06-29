@@ -3,7 +3,7 @@
 #include "GL/glew.h"
 #include "Game.h"
 #include "Math.h"
-#include "Rendering.h"
+#include "Renderer.h"
 
 void InputSystem(entt::registry *registry, const Uint8 *keyState) {
   auto input = registry->view<const Input, Move>();
@@ -80,21 +80,19 @@ void CollisionSystem(entt::registry *registry, float deltaTime) {
 }
 
 void MovementSystem(entt::registry *registry, float deltaTime) {
-  /*registry->view<const Move, Transform>().each(
-      [deltaTime](const Move &move, Transform &_pos) {
+  registry->view<const Move, Translation, Rotation>().each(
+      [deltaTime](const Move &move, Translation&_pos, Rotation& rot) {
         if (!Math::NearZero(move.angularSpeed)) {
-          float rot = _pos.rot;
-          rot += move.angularSpeed * deltaTime;
-          _pos.rot = rot;
+            float angle = move.angularSpeed * deltaTime;
+            Quaternion inc(Vector3::UnitZ, angle);
+            rot.rotation = Quaternion::Concatenate(rot.rotation, inc);
         }
 
         if (!Math::NearZero(move.forwardSpeed)) {
-          Vector2 pos;
-          pos.x = _pos.x;
-          pos.y = _pos.y;
-          Vector2 forward;
-          forward.x = Math::Cos(_pos.rot);
-          forward.y = Math::Sin(_pos.rot);
+          Vector3 pos;
+          pos.x = _pos.position.x;
+          pos.y = _pos.position.y;
+          Vector3 forward = Vector3::Transform(Vector3::UnitX, rot.rotation);
 
           pos += forward * move.forwardSpeed * deltaTime;
 
@@ -110,44 +108,47 @@ void MovementSystem(entt::registry *registry, float deltaTime) {
             pos.y = -382.0f; 
           }
 
-          _pos.x = pos.x;
-          _pos.y = pos.y;
+          _pos.position.x = pos.x;
+          _pos.position.y = pos.y;
         }
-      });*/
+      });
 }
 
 void RenderSystem(GameData *gd, entt::registry *registry) {
-  glClearColor(0.86f, 0.86f, 0.86f, 1.0f);
-  glClear(GL_COLOR_BUFFER_BIT);
-  glEnable(GL_BLEND);
-  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-  // each entity should have it's own mesh?
-  auto vertexView = registry->view<VertexArray>();
-  vertexView.each(
-      [](VertexArray &vertexArray) { SetVerticesActive(vertexArray.arrayID); });
-
-  auto view = registry->view<const Shader, const Texture, const Translation, const Rotation>();
-  view.each([](const Shader& shader, const Texture& texture, const Translation& transform, const Rotation& rotation
-               ) {
-    SetShaderActive(shader.shaderProgram);
-
-    Matrix4 scaleMat = Matrix4::CreateScale
+  auto view = registry->view<
+      const Shader, 
+      const Mesh, 
+      const Texture, 
+      const Translation, 
+      const Rotation>();
+  view.each([]
     (
-        static_cast<float>(texture.texWidth),
-        static_cast<float>(texture.texHeight), 
-        1.0f
-    );
+        const Shader& shader, 
+        const Mesh& mesh, 
+        const Texture& texture, 
+        const Translation& transform, 
+        const Rotation& rotation
+    )
+    {
+        SetShaderActive(shader.shaderProgram);
 
-    Matrix4 worldTransform = Matrix4::CreateScale(texture.scale);
-    worldTransform *= Matrix4::CreateFromQuaternion(rotation.rotation);
-    worldTransform *= Matrix4::CreateTranslation(transform.position);
-    Matrix4 world = scaleMat * worldTransform;
-    SetMatrixUniform(shader, "uWorldTransform", &world);
-    SetTextureActive(texture.textureID);
+        Matrix4 scaleMat = Matrix4::CreateScale
+        (
+            static_cast<float>(texture.texWidth),
+            static_cast<float>(texture.texHeight), 
+            1.0f
+        );
 
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
-  });
+        Matrix4 worldTransform = Matrix4::CreateScale(texture.scale);
+        worldTransform *= Matrix4::CreateFromQuaternion(rotation.rotation);
+        worldTransform *= Matrix4::CreateTranslation(transform.position);
+        Matrix4 world = scaleMat * worldTransform;
+        SetMatrixUniform(shader, "uWorldTransform", &world);
+        SetTextureActive(texture.textureID);
+        DrawMesh(mesh.numVerts);
+    }
+  );
 
   SDL_GL_SwapWindow(gd->window);
 }

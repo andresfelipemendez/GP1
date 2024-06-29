@@ -12,11 +12,11 @@
         },
         {
           "type": "translation",
-          "position": [ 0, 0, 5 ]
+          "position": [ 0, 5, -10 ]
         },
         {
           "type": "rotation",
-          "euler": [ 45, 0, 0 ]
+          "euler": [ 0, 0, 0 ]
         }
       ]
     },
