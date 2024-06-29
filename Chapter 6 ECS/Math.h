@@ -926,6 +926,29 @@ public:
 		w /= length;
 	}
 
+	static Quaternion EulerToQuaternion(Vector3 euler) {
+		// Convert degrees to radians
+		float yaw = euler.z * Math::Pi / 180.0f;
+		float pitch = euler.y * Math::Pi / 180.0f;
+		float roll = euler.x * Math::Pi / 180.0f;
+
+		// Calculate the sine and cosine of the half angles
+		float cy = cos(yaw * 0.5f);
+		float sy = sin(yaw * 0.5f);
+		float cp = cos(pitch * 0.5f);
+		float sp = sin(pitch * 0.5f);
+		float cr = cos(roll * 0.5f);
+		float sr = sin(roll * 0.5f);
+
+		Quaternion q;
+		q.w = cy * cp * cr + sy * sp * sr;
+		q.x = cy * cp * sr - sy * sp * cr;
+		q.y = sy * cp * sr + cy * sp * cr;
+		q.z = sy * cp * cr - cy * sp * sr;
+
+		return q;
+	}
+
 	// Normalize the provided quaternion
 	static Quaternion Normalize(const Quaternion& q)
 	{

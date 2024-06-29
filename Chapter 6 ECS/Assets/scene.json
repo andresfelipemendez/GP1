@@ -6,7 +6,7 @@
       "components": [
         {
           "type": "camera",
-          "fov": 45,
+          "fov": 70,
           "near": 0.1,
           "far": 1000
         },
@@ -24,16 +24,21 @@
       "name": "cube",
       "components": [
         {
-          "type":"mesh",
+          "type": "mesh",
           "filePath": "bed.glb"
         },
         {
           "type": "material",
+          "shader": "BasicMesh",
           "color": [ 1, 0, 0 ]
         },
         {
           "type": "translation",
-          "position": [ 0, 0, 0 ]
+          "position": [ 10, 0, 0 ]
+        },
+        {
+          "type": "rotation",
+          "euler": [ 0, 0, 45 ]
         }
       ]
     }

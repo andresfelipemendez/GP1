@@ -7,6 +7,8 @@ struct Camera {
 	float aspect;
 	float nearPlane;
 	float farPlane;
+	Matrix4 viewMatrix;
+	Matrix4 projectionMatrix;
 };
 
 struct Texture {
@@ -18,7 +20,7 @@ struct Texture {
 
 struct Mesh {
 	unsigned int arrayID;
-	size_t numVerts;
+	unsigned int numVerts;
 };
 
 struct VertexArray {
@@ -27,7 +29,7 @@ struct VertexArray {
 };
 
 struct Shader {
-	unsigned int shaderProgram;
+	unsigned int programID;
 };
 
 struct Translation {

@@ -115,14 +115,19 @@ void MovementSystem(entt::registry *registry, float deltaTime) {
 }
 
 void RenderSystem(GameData *gd, entt::registry *registry) {
+  auto camView = registry->view<Camera>();
+  auto camIt = camView.begin();
+  Camera& cam = camView.get<Camera>(*camIt);
+  Matrix4 viewProj = cam.viewMatrix * cam.projectionMatrix;
 
-  auto view = registry->view<
+  BeginDrawOpaque();
+  auto spriteView = registry->view<
       const Shader, 
       const Mesh, 
       const Texture, 
       const Translation, 
       const Rotation>();
-  view.each([]
+  spriteView.each([&viewProj]
     (
         const Shader& shader, 
         const Mesh& mesh, 
@@ -131,7 +136,8 @@ void RenderSystem(GameData *gd, entt::registry *registry) {
         const Rotation& rotation
     )
     {
-        SetShaderActive(shader.shaderProgram);
+        SetMatrixUniform(shader.programID, "uViewProj", &viewProj);
+        SetShaderActive(shader.programID);
 
         Matrix4 scaleMat = Matrix4::CreateScale
         (
@@ -144,11 +150,45 @@ void RenderSystem(GameData *gd, entt::registry *registry) {
         worldTransform *= Matrix4::CreateFromQuaternion(rotation.rotation);
         worldTransform *= Matrix4::CreateTranslation(transform.position);
         Matrix4 world = scaleMat * worldTransform;
-        SetMatrixUniform(shader, "uWorldTransform", &world);
+        SetMatrixUniform(shader.programID, "uWorldTransform", &world);
         SetTextureActive(texture.textureID);
+        SetMeshActive(mesh.arrayID);
         DrawMesh(mesh.numVerts);
     }
   );
 
-  SDL_GL_SwapWindow(gd->window);
+  auto view = registry->view<
+      const Shader,
+      const Mesh,
+      const Translation,
+      const Rotation>();
+  view.each([&viewProj]
+  (
+      const Shader& shader,
+      const Mesh& mesh,
+      const Translation& transform,
+      const Rotation& rotation
+      )
+      {
+          SetShaderActive(shader.programID);
+          SetMatrixUniform(shader.programID, "uViewProj", &viewProj);
+          
+          Matrix4 scaleMat = Matrix4::CreateScale
+          (
+              static_cast<float>(1),
+              static_cast<float>(1),
+              1.0f
+          );
+
+          Matrix4 worldTransform = Matrix4::CreateScale(1);
+          worldTransform *= Matrix4::CreateFromQuaternion(rotation.rotation);
+          worldTransform *= Matrix4::CreateTranslation(transform.position);
+          Matrix4 world = scaleMat * worldTransform;
+          SetMatrixUniform(shader.programID, "uWorldTransform", &world);
+          SetMeshActive(mesh.arrayID);
+          DrawMesh(mesh.numVerts);
+      }
+  );
+
+  EndDraw(gd);
 }

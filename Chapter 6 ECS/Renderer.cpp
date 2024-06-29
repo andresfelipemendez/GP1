@@ -5,7 +5,47 @@
 #include <fstream>
 #include <sstream>
 #include "AssetLoader.h"
+#include "Game.h"
 
+bool InitializeRenderer(GameData* gd) {
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
+    SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
+    SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
+    SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
+    SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
+    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+    SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);
+    SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
+    glEnable(GL_DEPTH_TEST);
+    gd->context = SDL_GL_CreateContext(gd->window);
+
+    glewExperimental = GL_TRUE;
+    if (glewInit() != GLEW_OK) {
+        SDL_Log("Failed to initialize GLEW.");
+        return false;
+    }
+    return true;
+}
+
+void CreateSpriteVerts(GameData* gd, entt::registry* registry) {
+    // clang-format off
+    std::vector<float> vertices{
+       -0.5f,   0.5f,  0.f,  0.f,  0.f,
+        0.5f,   0.5f,  0.f,  1.f,  0.f,
+        0.5f,  -0.5f,  0.f,  1.f,  1.f,
+       -0.5f,  -0.5f,  0.f,  0.f,  1.f
+    };
+
+    std::vector<unsigned int> indices{
+      0,1,2,
+      2,3,0
+    };
+
+    LoadMesh(registry, vertices, indices);
+    //clang-format on
+}
 
 void LoadMesh(entt::registry *registry, std::vector<float> vertices,
               std::vector<unsigned int> indices) {
@@ -63,9 +103,7 @@ uint32_t UploadMeshToGPU(std::vector<uint32_t> indices, std::vector<float> verti
 }
 
 Texture LoadTexture(const std::string &fileName) {
-  
-  Texture t;
-  
+  Texture t;  
   ImageFile image(fileName);
 
   glGenTextures(1, &t.textureID);
@@ -88,13 +126,23 @@ void SetShaderActive(unsigned int shaderProgram) {
   glUseProgram(shaderProgram);
 }
 
-void SetVerticesActive(unsigned int vertexID) { glBindVertexArray(vertexID); }
+void SetVerticesActive(unsigned int vertexID) { 
+    glBindVertexArray(vertexID); }
 
-unsigned int GetVertexArray() { return 0; }
+void SetMeshActive(unsigned int vertexID) {
+    glBindVertexArray(vertexID);
+}
 
-void SetMatrixUniform(Shader shader, const char *uniformName,
-                      const Matrix4 *matrix) {
-  GLuint loc = glGetUniformLocation(shader.shaderProgram, uniformName);
+unsigned int GetVertexArray() { 
+    return 0; 
+}
+
+void SetMatrixUniform(
+    unsigned int shaderProgram, 
+    const char *uniformName,
+    const Matrix4 *matrix) 
+{
+  GLuint loc = glGetUniformLocation(shaderProgram, uniformName);
   glUniformMatrix4fv(loc, 1, GL_TRUE, matrix->GetAsFloatPtr());
 }
 
@@ -182,18 +230,24 @@ Shader LoadShader(const std::string &vertexShader,
   return Shader{mShaderProgram};
 }
 
-void DrawOpaque()
+void BeginDrawOpaque()
 {
-
+    glClearColor(0.86f, 0.86f, 0.86f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glEnable(GL_DEPTH_TEST);
+    glDisable(GL_BLEND);
 }
 
 void BeginDrawTransparent() {
     glClearColor(0.86f, 0.86f, 0.86f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 
+void EndDraw(GameData* gd) {
+    SDL_GL_SwapWindow(gd->window);
+}
 void DrawMesh(size_t numVertices) {
     glDrawElements(GL_TRIANGLES, numVertices, GL_UNSIGNED_INT, nullptr);
 }

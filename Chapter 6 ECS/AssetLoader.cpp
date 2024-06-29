@@ -78,11 +78,28 @@ void LoadScene(entt::registry* registry, const std::string& path) {
                 auto _near = get_json_value<float>(component, "near");
                 auto _far = get_json_value<float>(component, "far");
 
+                // I should bring these from the scene
+                Matrix4 view = Matrix4::CreateLookAt(
+                    Vector3::Zero, // camera position
+                    Vector3::UnitX, // targe position
+                    Vector3::UnitZ // up
+                );
+
+                Matrix4 projection = Matrix4::CreatePerspectiveFOV(
+                    Math::ToRadians(*fov),
+                    1024, // width hardcoded for now
+                    768, // height 
+                    *_near,
+                    *_far
+                );
+
                 if (fov && _near && _far) {
                     auto& cam = registry->emplace<Camera>(e);
                     cam.fov = *fov;
                     cam.nearPlane = *_near;
                     cam.farPlane = *_far;
+                    cam.viewMatrix = view;
+                    cam.projectionMatrix = projection;
                 }
                 else {
                     std::cerr << "Camera component skipped due to missing data." << std::endl;
@@ -109,7 +126,7 @@ void LoadScene(entt::registry* registry, const std::string& path) {
                     rotEuler.y = component["euler"][1];
                     rotEuler.z = component["euler"][2];
                     auto& rot = registry->emplace<Rotation>(e);
-					rot.rotation = Quaternion::FromEuler(rotEuler);
+					rot.rotation = Quaternion::EulerToQuaternion(rotEuler);
 				}
 				else {
 					std::cerr << "Rotation component skipped due to missing data." << std::endl;
@@ -118,17 +135,29 @@ void LoadScene(entt::registry* registry, const std::string& path) {
 
 			if (type == "mesh") {
                 if (component["filePath"].is_string()) {
-                    auto& mesh = registry->emplace<Mesh>(e);
                     std::string path = component["filePath"];
                     path = "Assets/" + path;
-                    auto vertexArray = LoadMesh(path);
-                    registry->emplace<Mesh>(e, vertexArray);
+                    Mesh vertexArray = LoadMesh(path);
+                    auto& mesh = registry->emplace<Mesh>(e);
+                    mesh.arrayID = vertexArray.arrayID;
+                    mesh.numVerts = vertexArray.numVerts;
 				}
 				else {
 					std::cerr << "Mesh component skipped due to missing data." << std::endl;
 				}
-				/*mesh.path = component["path"];*/
 			}
+
+            if (type == "material") {
+                if (component["shader"].is_string())
+                {
+                    std::string path = component["shader"];
+                    std::string fragmentPath = "Assets/" + path + ".frag";
+                    std::string vertexPath = "Assets/" + path + ".vert";
+                    Shader shaderProgramID = LoadShader(vertexPath, fragmentPath);
+                    auto& shader = registry->emplace<Shader>(e);
+                    shader.programID = shaderProgramID.programID;
+                }
+            }
         }
     }
 }
@@ -185,7 +214,7 @@ Mesh LoadMesh(const std::string& path) {
             }
 
             // Allocate vertex buffer
-            size_t vertexCount = model.accessors[primitive.attributes.at("POSITION")].count;
+            unsigned int vertexCount = model.accessors[primitive.attributes.at("POSITION")].count;
             vertices.resize(vertexCount * stride);
 
             // Copy attribute data to vertex buffer

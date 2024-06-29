@@ -13,21 +13,10 @@
 
 bool Initialize(GameData *gd, entt::registry *registry) {
 
-
   if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) != 0) {
     SDL_Log("Unable to initialize SDL: %s", SDL_GetError());
     return false;
   }
-
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
-  SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
-  SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
-  SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
-  SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
-  SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-  SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);
 
   gd->window = SDL_CreateWindow("Game Programming in C++ (Chapter 6)", 100, 100,
                                 1024, 768, SDL_WINDOW_OPENGL);
@@ -37,14 +26,10 @@ bool Initialize(GameData *gd, entt::registry *registry) {
     return false;
   }
 
-  gd->context = SDL_GL_CreateContext(gd->window);
-
-  glewExperimental = GL_TRUE;
-  if (glewInit() != GLEW_OK) {
-    SDL_Log("Failed to initialize GLEW.");
-    return false;
+  if(!InitializeRenderer(gd)){
+      SDL_Log("Failed to Initialize Renderer");
+      return false;
   }
-
   CreateSpriteVerts(gd, registry);
 
   Random::Init();
@@ -56,23 +41,7 @@ bool Initialize(GameData *gd, entt::registry *registry) {
   return true;
 }
 
-void CreateSpriteVerts(GameData *gd, entt::registry *registry) {
-  // clang-format off
-  std::vector<float> vertices {
-     -0.5f,   0.5f,  0.f,  0.f,  0.f,
-      0.5f,   0.5f,  0.f,  1.f,  0.f,
-      0.5f,  -0.5f,  0.f,  1.f,  1.f,
-     -0.5f,  -0.5f,  0.f,  0.f,  1.f
-  };
 
-  std::vector<unsigned int> indices {
-    0,1,2,
-    2,3,0
-  };
-
-  LoadMesh(registry, vertices, indices);
-  //clang-format on
-}
 
 void RunLoop(GameData *gd, entt::registry *registry) {
   while (gd->isRunning) {
