@@ -9,7 +9,9 @@
 #include <SDL.h>
 #include <vector>
 #include <fstream>
-
+#include <fstream>
+#include <iostream>
+#include <string>
 #define TINYGLTF_IMPLEMENTATION
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "tiny_gltf.h"
@@ -17,6 +19,8 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 #include "Renderer.h"
+#include <GL/glew.h>
+#define BUFFER_OFFSET(i) ((char *)NULL + (i))
 
 ImageFile::ImageFile(const std::string& fileName)
 {
@@ -137,7 +141,13 @@ void LoadScene(entt::registry* registry, const std::string& path) {
                 if (component["filePath"].is_string()) {
                     std::string path = component["filePath"];
                     path = "Assets/" + path;
-                    Mesh vertexArray = LoadMesh(path);
+                    Mesh vertexArray{};
+                    if (path.ends_with(".glft") || path.ends_with(".glb")) {
+                       vertexArray = LoadGLTFMesh(path);
+                    }
+                    else if (path.ends_with(".obj")) {
+                        vertexArray = LoadOBJMesh(path);
+                    }
                     auto& mesh = registry->emplace<Mesh>(e);
                     mesh.arrayID = vertexArray.arrayID;
                     mesh.numVerts = vertexArray.numVerts;
@@ -163,7 +173,84 @@ void LoadScene(entt::registry* registry, const std::string& path) {
 }
 
 
-Mesh LoadMesh(const std::string& path) {
+
+Mesh LoadOBJMesh(const std::string& path)
+{
+    std::vector<float> vertices;
+    std::vector<unsigned int> indices;
+
+    std::ifstream file(path);
+    if (!file.is_open()) {
+        std::cerr << "Failed to open OBJ file: " << path << std::endl;
+        return {};
+    }
+
+    std::vector<unsigned int> vertexIndices, uvIndices, normalIndices;
+    std::vector<float> tempPositions;
+    std::vector<float> tempUVs;
+    std::vector<float> tempNormals;
+
+    std::string line;
+    while (std::getline(file, line)) {
+        std::istringstream ss(line);
+        std::string prefix;
+        ss >> prefix;
+
+        if (prefix == "v") {
+            float x, y, z;
+            ss >> x >> y >> z;
+            tempPositions.push_back(x);
+            tempPositions.push_back(y);
+            tempPositions.push_back(z);
+        }
+        else if (prefix == "vt") {
+            float u, v;
+            ss >> u >> v;
+            tempUVs.push_back(u);
+            tempUVs.push_back(v);
+        }
+        else if (prefix == "vn") {
+            float nx, ny, nz;
+            ss >> nx >> ny >> nz;
+            tempNormals.push_back(nx);
+            tempNormals.push_back(ny);
+            tempNormals.push_back(nz);
+        }
+        else if (prefix == "f") {
+            unsigned int vertexIndex[3], uvIndex[3], normalIndex[3];
+            char slash;
+            for (int i = 0; i < 3; ++i) {
+                ss >> vertexIndex[i] >> slash >> uvIndex[i] >> slash >> normalIndex[i];
+                vertexIndices.push_back(vertexIndex[i] - 1);
+                uvIndices.push_back(uvIndex[i] - 1);
+                normalIndices.push_back(normalIndex[i] - 1);
+            }
+        }
+    }
+
+    // Create the vertex data
+    for (unsigned int i = 0; i < vertexIndices.size(); ++i) {
+        vertices.push_back(tempPositions[vertexIndices[i] * 3]);
+        vertices.push_back(tempPositions[vertexIndices[i] * 3 + 1]);
+        vertices.push_back(tempPositions[vertexIndices[i] * 3 + 2]);
+
+        vertices.push_back(tempNormals[normalIndices[i] * 3]);
+        vertices.push_back(tempNormals[normalIndices[i] * 3 + 1]);
+        vertices.push_back(tempNormals[normalIndices[i] * 3 + 2]);
+
+        vertices.push_back(tempUVs[uvIndices[i] * 2]);
+        vertices.push_back(tempUVs[uvIndices[i] * 2 + 1]);
+
+        indices.push_back(i);
+    }
+    
+    uint32_t vao = UploadMeshToGPU(indices, vertices, 8 * sizeof(float));
+    return {
+        vao, indices.size()
+    };
+}
+
+Mesh LoadGLTFMesh(const std::string& path) {
 	tinygltf::Model model;
 	tinygltf::TinyGLTF loader;
 	std::string err;
@@ -190,57 +277,78 @@ Mesh LoadMesh(const std::string& path) {
 		std::cerr << "Failed to load glTF file." << std::endl;
         return {};
 	}
+   
+  
+    if (model.scenes.size() > 1) {
+        SDL_Log("the engine don't support more than one scene");
+        return {};
+    }
+    const tinygltf::Scene& scene = model.scenes[0];
+    if (scene.nodes.size() > 1) {
+        SDL_Log("the engine don't support more than one node per gltf file");
+        return {};
+    }
+    if (model.meshes.size() > 1) {
+        SDL_Log("the engine don't support more than one mesh per gltf file");
+        return {};
+    }
+    const tinygltf::Mesh& mesh = model.meshes[0];
+    
+    auto size = mesh.primitives.size();
 
-    for (const auto& mesh : model.meshes) {
-        for (const auto& primitive : mesh.primitives) {            
-            const tinygltf::Accessor& indexAccesor = model.accessors[primitive.indices];
-            const tinygltf::BufferView& indexBufferView = model.bufferViews[indexAccesor.bufferView];
-            const tinygltf::Buffer& indexBuffer = model.buffers[indexBufferView.buffer];
+    GLuint vao;
+    int numVertices = 0;
+    glGenVertexArrays(1, &vao);
+    glBindVertexArray(vao);
 
-            std::vector<uint32_t> indices(indexAccesor.count);
-            std::vector<float> vertices;
-
-            memcpy(indices.data(), &indexBuffer.data[indexBufferView.byteOffset + indexAccesor.byteOffset],
-                indexAccesor.count * sizeof(uint32_t));
-
-            // Determine the stride and offset for each attribute
-            std::unordered_map<std::string, size_t> attributeOffsets;
-            uint32_t stride = 0;
-
-            for (const auto& attrib : primitive.attributes) {
-                const tinygltf::Accessor& accessor = model.accessors[attrib.second];
-                attributeOffsets[attrib.first] = stride;
-                stride += accessor.type * sizeof(float);
-            }
-
-            // Allocate vertex buffer
-            unsigned int vertexCount = model.accessors[primitive.attributes.at("POSITION")].count;
-            vertices.resize(vertexCount * stride);
-
-            // Copy attribute data to vertex buffer
-            for (const auto& attrib : primitive.attributes) {
-                const tinygltf::Accessor& accessor = model.accessors[attrib.second];
-                const tinygltf::BufferView& bufferView = model.bufferViews[accessor.bufferView];
-                const tinygltf::Buffer& buffer = model.buffers[bufferView.buffer];
-
-                size_t elementSize = accessor.type * sizeof(float);
-                size_t offset = attributeOffsets[attrib.first];
-
-                for (size_t i = 0; i < vertexCount; ++i) {
-                    memcpy(&vertices[i * stride + offset],
-                        &buffer.data[bufferView.byteOffset + accessor.byteOffset + i * elementSize],
-                        elementSize);
-                }
-            }
-
-            if (stride == 32) {
-                return {
-                    UploadMeshToGPU(indices, vertices, stride),
-                    vertexCount
-                };
-            }
+    std::map<int, GLuint> vbos;
+    for (size_t i = 0; i < model.bufferViews.size(); ++i) {
+        const tinygltf::BufferView& bufferView = model.bufferViews[i];
+        const tinygltf::Buffer& buffer = model.buffers[bufferView.buffer];
+        GLuint vbo;
+        glGenBuffers(1, &vbo);
+        vbos[i] = vbo;
+        if (bufferView.target == GL_ELEMENT_ARRAY_BUFFER) {
+            numVertices = bufferView.byteLength;
         }
+        glBindBuffer(bufferView.target, vbo);
+        glBufferData(bufferView.target, bufferView.byteLength, &buffer.data.at(0) + bufferView.byteOffset, GL_STATIC_DRAW);
+
     }
 
 
+    const tinygltf::Primitive& primitive = mesh.primitives[0];
+    const tinygltf::Accessor indexAccessor = model.accessors[primitive.indices];
+    
+
+    for (const auto& attrib : primitive.attributes) {
+        const tinygltf::Accessor accessor = model.accessors[attrib.second];
+        int byteStride = accessor.ByteStride(model.bufferViews[accessor.bufferView]);
+
+        glBindBuffer(GL_ARRAY_BUFFER, vbos[accessor.bufferView]);
+
+        int size = 1;
+        if (accessor.type != TINYGLTF_TYPE_SCALAR) {
+            size = accessor.type;
+        }
+
+        int vaa = -1;
+        if (attrib.first.compare("POSITION") == 0) vaa = 0;
+        if (attrib.first.compare("NORMAL") == 0) vaa = 1;
+        if (attrib.first.compare("TEXCOORD_0") == 0) vaa = 2;
+        if (vaa > -1) {
+            glEnableVertexAttribArray(vaa);
+            glVertexAttribPointer(vaa, size, accessor.componentType,
+                accessor.normalized ? GL_TRUE : GL_FALSE,
+                byteStride, BUFFER_OFFSET(accessor.byteOffset));
+        }
+        else {
+            std::cout << "vaa missing: " << attrib.first << std::endl;
+        }
+    }
+
+    Mesh m;
+    m.arrayID = vao;
+    m.numVerts = indexAccessor.count;
+    return m;
 }

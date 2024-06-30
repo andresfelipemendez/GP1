@@ -1,6 +1,5 @@
 #include "Systems.h"
 #include "Components.h"
-#include "GL/glew.h"
 #include "Game.h"
 #include "Math.h"
 #include "Renderer.h"

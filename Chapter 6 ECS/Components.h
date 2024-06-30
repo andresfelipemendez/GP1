@@ -20,7 +20,7 @@ struct Texture {
 
 struct Mesh {
 	unsigned int arrayID;
-	unsigned int numVerts;
+	size_t numVerts;
 };
 
 struct VertexArray {

@@ -74,7 +74,7 @@ void LoadMesh(entt::registry *registry, std::vector<float> vertices,
   registry->emplace<VertexArray>(vertexArrayEntity, vertexArray);
 }
 
-uint32_t UploadMeshToGPU(std::vector<uint32_t> indices, std::vector<float> vertices, size_t stride) {
+uint32_t UploadMeshToGPU(const std::vector<uint32_t>& indices,const std::vector<float>& vertices, size_t stride) {
     uint32_t vertexArray;
     uint32_t vertexBuffer;
     uint32_t indexBuffer;
@@ -249,5 +249,5 @@ void EndDraw(GameData* gd) {
     SDL_GL_SwapWindow(gd->window);
 }
 void DrawMesh(size_t numVertices) {
-    glDrawElements(GL_TRIANGLES, numVertices, GL_UNSIGNED_INT, nullptr);
+    glDrawElements(GL_TRIANGLES, numVertices, GL_UNSIGNED_INT, 0);
 }

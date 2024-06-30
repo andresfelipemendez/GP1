@@ -1,13 +1,12 @@
 #pragma once
 #include "entt/entt.hpp"
-
 #include "Components.h"
 #include <vector>
 
 bool InitializeRenderer(class GameData* gd);
 void LoadMesh(entt::registry *registry, std::vector<float> vertices,
               std::vector<unsigned int> indices);
-uint32_t UploadMeshToGPU(std::vector<uint32_t> indices, std::vector<float> vertices,
+uint32_t UploadMeshToGPU(const std::vector<uint32_t>& indices, const std::vector<float>& vertices,
     size_t stride);
 
 Texture LoadTexture(const std::string& fileName);

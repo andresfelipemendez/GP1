@@ -25,7 +25,7 @@
       "components": [
         {
           "type": "mesh",
-          "filePath": "bed.glb"
+          "filePath": "barrel.obj"
         },
         {
           "type": "material",
@@ -34,11 +34,11 @@
         },
         {
           "type": "translation",
-          "position": [ 10, 0, 0 ]
+          "position": [ 1, 0, -0.2 ]
         },
         {
           "type": "rotation",
-          "euler": [ 0, 0, 45 ]
+          "euler": [ 10, 45,10 ]
         }
       ]
     }
