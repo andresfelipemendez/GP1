@@ -18,6 +18,14 @@ struct Texture {
 	float scale = 1;
 };
 
+
+struct Sprite {
+	unsigned int textureID;
+	int texWidth;
+	int texHeight;
+	float scale = 1;
+};
+
 struct Mesh {
 	unsigned int arrayID;
 	size_t numVerts;

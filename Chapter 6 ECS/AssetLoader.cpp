@@ -30,6 +30,12 @@ ImageFile::ImageFile(const std::string& fileName)
         SDL_Log("STB failed to load image %s: %s", fileName.c_str(),
             stbi_failure_reason());
     }
+    int format = GL_RGB;
+    if (channels == 4)
+    {
+        format = GL_RGBA;
+    }
+    channels = format;
 }
 ImageFile::~ImageFile() {
     stbi_image_free(data);
@@ -145,8 +151,9 @@ void LoadScene(entt::registry* registry, const std::string& path) {
                     if (path.ends_with(".glft") || path.ends_with(".glb")) {
                        vertexArray = LoadGLTFMesh(path);
                     }
-                    else if (path.ends_with(".obj")) {
-                        vertexArray = LoadOBJMesh(path);
+                    
+                    if (path.ends_with(".obj") && !LoadOBJMesh(path, vertexArray)) {
+                        continue;
                     }
                     auto& mesh = registry->emplace<Mesh>(e);
                     mesh.arrayID = vertexArray.arrayID;
@@ -168,13 +175,27 @@ void LoadScene(entt::registry* registry, const std::string& path) {
                     shader.programID = shaderProgramID.programID;
                 }
             }
+
+            if (type == "texture") {
+                if (component["filePath"].is_string()) {
+                    std::string path = component["filePath"];
+                    path = "Assets/" + path; 
+                    Texture t;
+                    t = LoadTexture(path);
+                    auto& tex = registry->emplace<Texture>(e);
+                    tex.textureID = t.textureID;
+                    tex.texWidth = t.texWidth;
+                    tex.texHeight = t.texHeight;
+                    tex.scale = 1;
+                }
+            }
         }
     }
 }
 
 
 
-Mesh LoadOBJMesh(const std::string& path)
+bool LoadOBJMesh(const std::string& path, Mesh& mesh)
 {
     std::vector<float> vertices;
     std::vector<unsigned int> indices;
@@ -182,7 +203,7 @@ Mesh LoadOBJMesh(const std::string& path)
     std::ifstream file(path);
     if (!file.is_open()) {
         std::cerr << "Failed to open OBJ file: " << path << std::endl;
-        return {};
+        return false;
     }
 
     std::vector<unsigned int> vertexIndices, uvIndices, normalIndices;
@@ -228,7 +249,6 @@ Mesh LoadOBJMesh(const std::string& path)
         }
     }
 
-    // Create the vertex data
     for (unsigned int i = 0; i < vertexIndices.size(); ++i) {
         vertices.push_back(tempPositions[vertexIndices[i] * 3]);
         vertices.push_back(tempPositions[vertexIndices[i] * 3 + 1]);
@@ -245,9 +265,10 @@ Mesh LoadOBJMesh(const std::string& path)
     }
     
     uint32_t vao = UploadMeshToGPU(indices, vertices, 8 * sizeof(float));
-    return {
+    mesh = {
         vao, indices.size()
     };
+    return true;
 }
 
 Mesh LoadGLTFMesh(const std::string& path) {

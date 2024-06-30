@@ -28,13 +28,17 @@
           "filePath": "barrel.obj"
         },
         {
+          "type": "texture",
+          "filePath": "colormap.png"
+        },
+        {
           "type": "material",
           "shader": "BasicMesh",
           "color": [ 1, 0, 0 ]
         },
         {
           "type": "translation",
-          "position": [ 1, 0, -0.2 ]
+          "position": [ 1, 0, 0 ]
         },
         {
           "type": "rotation",

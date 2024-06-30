@@ -17,7 +17,7 @@ struct ImageFile {
 void LoadScene(entt::registry* registry, const std::string& path);
 
 
-Mesh LoadOBJMesh(const std::string& path);
+bool LoadOBJMesh(const std::string& path, Mesh& mesh);
 Mesh LoadGLTFMesh(const std::string& path);
 
 #endif
