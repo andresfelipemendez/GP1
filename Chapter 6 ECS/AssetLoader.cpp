@@ -139,6 +139,21 @@ void LoadScene(entt::registry* registry, const std::string& path) {
                 }
             }
 
+            if (type == "movement") {
+                registry->emplace<Move>(e);
+            }
+
+            if (type == "input") {
+                auto& input = registry->emplace<Input>(e);
+                // I might need a better way to configure input
+                input.forwardKey = SDL_SCANCODE_W;
+                input.backKey = SDL_SCANCODE_S;
+                input.clockwiseKey = SDL_SCANCODE_D;
+                input.counterClockwiseKey = SDL_SCANCODE_A;
+                input.maxFwdSpeed = component["forwardSpeed"]; 
+                input.maxAngSpeed = component["angularSpeed"];
+            }
+
 			if (type == "mesh") {
                 if (component["filePath"].is_string()) {
                     std::string path = component["filePath"];
@@ -211,6 +226,7 @@ void LoadScene(entt::registry* registry, const std::string& path) {
                     alc.specColor.z = component["specColor"][2];
                 }
             }
+
         }
     }
 }

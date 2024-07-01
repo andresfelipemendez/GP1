@@ -88,35 +88,20 @@ void MovementSystem(entt::registry *registry, float deltaTime) {
         }
 
         if (!Math::NearZero(move.forwardSpeed)) {
-          Vector3 pos;
-          pos.x = _pos.position.x;
-          pos.y = _pos.position.y;
+          Vector3 pos = _pos.position;
           Vector3 forward = Vector3::Transform(Vector3::UnitX, rot.rotation);
-
           pos += forward * move.forwardSpeed * deltaTime;
-
-          if (pos.x < -512.0f) {
-            pos.x = 510.0f;
-          } else if (pos.x > 512.0f) {
-            pos.x = -510.0f;;
-          }
-
-          if (pos.y < -384.0f) {
-            pos.y = 382.0f;
-          } else if (pos.y > 384.0f) {
-            pos.y = -382.0f; 
-          }
-
-          _pos.position.x = pos.x;
-          _pos.position.y = pos.y;
+          _pos.position = pos;
         }
       });
 }
 
 void RenderSystem(GameData *gd, entt::registry *registry) {
-  auto camView = registry->view<Camera>();
+  auto camView = registry->view<Camera, Translation, Rotation>();
   auto camIt = camView.begin();
   Camera& cam = camView.get<Camera>(*camIt);
+  Translation& campos = camView.get<Translation>(*camIt);
+  Rotation& camrot = camView.get<Rotation>(*camIt);
 
   auto ambientLightColorView = registry->view<AmbientLightColor>();
   auto alcIt = ambientLightColorView.begin();
@@ -126,7 +111,15 @@ void RenderSystem(GameData *gd, entt::registry *registry) {
   auto dlIt = directionalLightView.begin();
   DirectionalLight& dl = directionalLightView.get<DirectionalLight>(*dlIt);
 
-  Matrix4 viewProj = cam.viewMatrix * cam.projectionMatrix;
+
+  Vector3 forward = Vector3::Transform(Vector3::UnitX, camrot.rotation);
+  Matrix4 camview = Matrix4::CreateLookAt(
+      campos.position, // camera position
+      campos.position + forward * 100.0f, // targe position
+      Vector3::UnitZ // up
+  );
+
+  Matrix4 viewProj = camview * cam.projectionMatrix;
 
   Matrix4 invView = viewProj;
   invView.Invert();

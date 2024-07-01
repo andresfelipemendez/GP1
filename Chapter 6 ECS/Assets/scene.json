@@ -12,11 +12,19 @@
         },
         {
           "type": "translation",
-          "position": [ 0, 5, -10 ]
+          "position": [ -1, 5, -1]
         },
         {
           "type": "rotation",
           "euler": [ 0, 0, 0 ]
+        },
+        {
+          "type": "movement"
+        },
+        {
+          "type": "input",
+          "angularSpeed": 1,
+          "forwardSpeed": 30
         }
       ]
     },
