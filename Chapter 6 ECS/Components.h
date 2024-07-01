@@ -11,6 +11,16 @@ struct Camera {
 	Matrix4 projectionMatrix;
 };
 
+struct AmbientLightColor {
+	Vector3 color;
+};
+
+struct DirectionalLight {
+	Vector3 direction;
+	Vector3 diffuseColor;
+	Vector3 specColor;
+};
+
 struct Texture {
 	unsigned int textureID;
 	int texWidth;

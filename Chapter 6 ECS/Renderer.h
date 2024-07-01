@@ -3,7 +3,7 @@
 #include "Components.h"
 #include <vector>
 
-bool InitializeRenderer(class GameData* gd);
+bool InitializeRenderer(struct GameData* gd);
 void LoadMesh(entt::registry *registry, std::vector<float> vertices,
               std::vector<unsigned int> indices);
 uint32_t UploadMeshToGPU(const std::vector<uint32_t>& indices, const std::vector<float>& vertices,
@@ -19,3 +19,5 @@ void SetVerticesActive(unsigned int vertexID);
 void SetTextureActive(unsigned int textureID);
 void SetMeshActive(unsigned int vertexID);
 void SetMatrixUniform(unsigned int shaderProgram, const char* uniformName, const class Matrix4* matrix);
+
+void SetVectorUniform(unsigned int shaderProgram, const char* name, const Vector3& vector);

@@ -33,16 +33,37 @@
         },
         {
           "type": "material",
-          "shader": "BasicMesh",
+          "shader": "Phong",
           "color": [ 1, 0, 0 ]
         },
         {
           "type": "translation",
-          "position": [ 1, 0, 0 ]
+          "position": [ 1, -0.1, -0.5 ]
         },
         {
           "type": "rotation",
-          "euler": [ 10, 45,10 ]
+          "euler": [ 45, 0, -40 ]
+        }
+
+      ]
+    },
+    {
+      "name": "ambient light",
+      "components": [
+        {
+          "type": "ambientLight",
+          "color": [ 0.2, 0.2, 0.2 ]
+        }
+      ]
+    },
+    {
+      "name": "directional light",
+      "components": [
+        {
+          "type": "directionalLight",
+          "direction": [ 0.0, -0.707,  -0.707],
+          "diffuseColor": [0.78, 0.88, 1.0 ],
+          "specColor": [0.8, 0.8, 0.8 ]
         }
       ]
     }

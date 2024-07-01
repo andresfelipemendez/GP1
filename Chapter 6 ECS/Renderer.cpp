@@ -148,6 +148,12 @@ void SetMatrixUniform(
   glUniformMatrix4fv(loc, 1, GL_TRUE, matrix->GetAsFloatPtr());
 }
 
+void SetVectorUniform(unsigned int shaderProgram, const char* name, const Vector3& vector)
+{
+    GLuint loc = glGetUniformLocation(shaderProgram, name);
+    glUniform3fv(loc, 1, vector.GetAsFloatPtr());
+}
+
 bool IsCompiled(GLuint shader) {
   GLint status;
   glGetShaderiv(shader, GL_COMPILE_STATUS, &status);

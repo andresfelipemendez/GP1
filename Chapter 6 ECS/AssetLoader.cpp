@@ -25,17 +25,13 @@
 ImageFile::ImageFile(const std::string& fileName)
 {
     stbi_set_flip_vertically_on_load(true);
-    data = stbi_load(fileName.c_str(), &width, &height, &channels, 0);
+    int format;
+    data = stbi_load(fileName.c_str(), &width, &height, &format, 0);
     if (!data) {
         SDL_Log("STB failed to load image %s: %s", fileName.c_str(),
             stbi_failure_reason());
     }
-    int format = GL_RGB;
-    if (channels == 4)
-    {
-        format = GL_RGBA;
-    }
-    channels = format;
+    channels = format == 4 ? GL_RGBA : GL_RGB;
 }
 ImageFile::~ImageFile() {
     stbi_image_free(data);
@@ -187,6 +183,32 @@ void LoadScene(entt::registry* registry, const std::string& path) {
                     tex.texWidth = t.texWidth;
                     tex.texHeight = t.texHeight;
                     tex.scale = 1;
+                }
+            }
+
+            if (type == "ambientLight") {
+                if (component["color"].is_array() && component["color"].size() == 3) {
+                    auto& alc = registry->emplace<AmbientLightColor>(e);
+                    alc.color.x = component["color"][0];
+                    alc.color.y = component["color"][1];
+                    alc.color.z = component["color"][2];
+                }
+            }
+
+            if (type == "directionalLight") {
+                if (component["direction"].is_array() && component["direction"].size() == 3) {
+                    auto& alc = registry->emplace<DirectionalLight>(e);
+                    alc.direction.x = component["direction"][0];
+                    alc.direction.y = component["direction"][1];
+                    alc.direction.z = component["direction"][2];
+
+                    alc.diffuseColor.x = component["diffuseColor"][0];
+                    alc.diffuseColor.y = component["diffuseColor"][1];
+                    alc.diffuseColor.z = component["diffuseColor"][2];
+
+                    alc.specColor.x = component["specColor"][0];
+                    alc.specColor.y = component["specColor"][1];
+                    alc.specColor.z = component["specColor"][2];
                 }
             }
         }

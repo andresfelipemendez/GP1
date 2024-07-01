@@ -117,7 +117,21 @@ void RenderSystem(GameData *gd, entt::registry *registry) {
   auto camView = registry->view<Camera>();
   auto camIt = camView.begin();
   Camera& cam = camView.get<Camera>(*camIt);
+
+  auto ambientLightColorView = registry->view<AmbientLightColor>();
+  auto alcIt = ambientLightColorView.begin();
+  AmbientLightColor& alc = ambientLightColorView.get<AmbientLightColor>(*alcIt);
+
+  auto directionalLightView = registry->view<DirectionalLight>();
+  auto dlIt = directionalLightView.begin();
+  DirectionalLight& dl = directionalLightView.get<DirectionalLight>(*dlIt);
+
   Matrix4 viewProj = cam.viewMatrix * cam.projectionMatrix;
+
+  Matrix4 invView = viewProj;
+  invView.Invert();
+
+
 
   BeginDrawOpaque();
   auto spriteView = registry->view<
@@ -126,7 +140,7 @@ void RenderSystem(GameData *gd, entt::registry *registry) {
       const Texture, 
       const Translation, 
       const Rotation>();
-  spriteView.each([&viewProj]
+  spriteView.each([&viewProj,&alc, &invView, &dl]
     (
         const Shader& shader, 
         const Mesh& mesh, 
@@ -141,12 +155,20 @@ void RenderSystem(GameData *gd, entt::registry *registry) {
         SetShaderActive(shader.programID);
         SetTextureActive(texture.textureID);
         SetMeshActive(mesh.arrayID);
-        SetMatrixUniform(shader.programID, "uViewProj", &viewProj);   
+        
+        SetVectorUniform(shader.programID, "uCameraPos", invView.GetTranslation());
+        SetVectorUniform(shader.programID, "uAmbientLight", alc.color);
+        SetVectorUniform(shader.programID, "uDirLight.mDirection", dl.direction);
+        SetVectorUniform(shader.programID, "uDirLight.mDiffuseColor", dl.diffuseColor);
+        SetVectorUniform(shader.programID, "uDirLight.mSpecColor", dl.specColor);
+        SetMatrixUniform(shader.programID, "uViewProj", &viewProj);
         SetMatrixUniform(shader.programID, "uWorldTransform", &worldTransform);
         DrawMesh(mesh.numVerts);
     }
   );
 
+
+  //BeginDrawTransparent();
   auto view = registry->view<
       const Shader,
       const Mesh,
