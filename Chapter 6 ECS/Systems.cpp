@@ -102,7 +102,6 @@ void RenderSystem(GameData *gd, entt::registry *registry) {
   Camera& cam = camView.get<Camera>(*camIt);
   Translation& campos = camView.get<Translation>(*camIt);
   Rotation& camrot = camView.get<Rotation>(*camIt);
-
   auto ambientLightColorView = registry->view<AmbientLightColor>();
   auto alcIt = ambientLightColorView.begin();
   AmbientLightColor& alc = ambientLightColorView.get<AmbientLightColor>(*alcIt);

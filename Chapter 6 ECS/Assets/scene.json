@@ -12,11 +12,11 @@
         },
         {
           "type": "translation",
-          "position": [ -1, 5, -1]
+          "position": [ -0.01, 0.5, 0]
         },
         {
           "type": "rotation",
-          "euler": [ 0, 0, 0 ]
+          "euler": [ 0, 0, -90 ]
         },
         {
           "type": "movement"
@@ -33,7 +33,7 @@
       "components": [
         {
           "type": "mesh",
-          "filePath": "barrel.obj"
+          "filePath": "bevel-hq-brick-1x1.obj"
         },
         {
           "type": "texture",
@@ -46,7 +46,7 @@
         },
         {
           "type": "translation",
-          "position": [ 1, -0.1, -0.5 ]
+          "position": [ 0, 0, 0 ]
         },
         {
           "type": "rotation",
