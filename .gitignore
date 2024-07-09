@@ -27,6 +27,7 @@ Chpt1/GP1/GP1/Debug
 /**/.vs/
 /**/.vs/*
 *.obj
+!*/Assets/*.obj
 /Chpt1 - Chpt 3/CHPT2/x64
 /Chpt1 - Chpt 3/CHPT2DOD/x64
 /Chpt1 - Chpt 3/CHPT3/x64
