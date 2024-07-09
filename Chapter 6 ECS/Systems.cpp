@@ -161,16 +161,18 @@ void RenderSystem(GameData *gd, entt::registry *registry) {
   );
 
 
-  //BeginDrawTransparent();
+  BeginDrawTransparent();
   auto view = registry->view<
       const Shader,
       const Mesh,
+      const Sprite,
       const Translation,
       const Rotation>();
   view.each([&viewProj]
   (
       const Shader& shader,
       const Mesh& mesh,
+      const Sprite& sprite,
       const Translation& transform,
       const Rotation& rotation
       )

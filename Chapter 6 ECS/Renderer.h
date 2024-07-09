@@ -12,6 +12,7 @@ uint32_t UploadMeshToGPU(const std::vector<uint32_t>& indices, const std::vector
 Texture LoadTexture(const std::string& fileName);
 Shader LoadShader(const std::string& vertexShader, const std::string& fragmentShader);
 void BeginDrawOpaque();
+void BeginDrawTransparent();
 void DrawMesh(size_t numVertices);
 void EndDraw(GameData* gd);
 void SetShaderActive(unsigned int shaderProgram);
