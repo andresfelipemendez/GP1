@@ -181,8 +181,8 @@ void RenderSystem(GameData *gd, entt::registry *registry) {
           
           Matrix4 scaleMat = Matrix4::CreateScale
           (
-              static_cast<float>(1),
-              static_cast<float>(1),
+              static_cast<float>(sprite.texWidth),
+              static_cast<float>(sprite.texHeight),
               1.0f
           );
 

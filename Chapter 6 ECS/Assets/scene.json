@@ -74,14 +74,22 @@
           "specColor": [ 0.8, 0.8, 0.8 ]
         }
       ]
-    }
+    },
     {
-      "name": "sprite example"
+      "name": "sprite example",
       "component": [
         {
           "type": "sprite",
-          "filePath": "Radar.png",
-
+          "filePath": "Radar.png"
+        },
+        {
+          "type": "material",
+          "shader": "Sprite",
+          "color": [ 1, 0, 0 ]
+        },
+        {
+          "type": "translation",
+          "position": [ 0, 0, 0 ]
         }
       ]
     }
