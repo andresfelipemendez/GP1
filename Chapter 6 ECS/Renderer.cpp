@@ -29,7 +29,7 @@ bool InitializeRenderer(GameData* gd) {
     return true;
 }
 
-void CreateSpriteVerts(GameData* gd, entt::registry* registry) {
+uint32_t CreateSpriteVerts() {
     // clang-format off
     std::vector<float> vertices{
        -0.5f,   0.5f,  0.f,  0.f,  0.f,
@@ -43,12 +43,12 @@ void CreateSpriteVerts(GameData* gd, entt::registry* registry) {
       2,3,0
     };
 
-    LoadMesh(registry, vertices, indices);
+    return LoadMesh(vertices, indices);
     //clang-format on
 }
 
-void LoadMesh(entt::registry *registry, std::vector<float> vertices,
-              std::vector<unsigned int> indices) {
+uint32_t LoadMesh(std::vector<float> vertices, std::vector<unsigned int> indices) 
+{
   unsigned int vertexArray;
   unsigned int vertexBuffer;
   unsigned int indexBuffer;
@@ -70,8 +70,7 @@ void LoadMesh(entt::registry *registry, std::vector<float> vertices,
   glEnableVertexAttribArray(1);
   glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 5,
                         reinterpret_cast<void *>(sizeof(float) * 3));
-  auto vertexArrayEntity = registry->create();
-  registry->emplace<VertexArray>(vertexArrayEntity, vertexArray);
+  return vertexArray;
 }
 
 uint32_t UploadMeshToGPU(const std::vector<uint32_t>& indices,const std::vector<float>& vertices, size_t stride) {

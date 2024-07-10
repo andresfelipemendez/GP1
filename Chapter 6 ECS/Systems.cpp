@@ -176,8 +176,9 @@ void RenderSystem(GameData *gd, entt::registry *registry) {
       const Rotation& rotation
       )
       {
+          Matrix4 viewProj = Matrix4::CreateSimpleViewProj(1024.f, 768.f);
+          SetTextureActive(sprite.textureID);
           SetShaderActive(shader.programID);
-          SetMatrixUniform(shader.programID, "uViewProj", &viewProj);
           
           Matrix4 scaleMat = Matrix4::CreateScale
           (
@@ -187,10 +188,9 @@ void RenderSystem(GameData *gd, entt::registry *registry) {
           );
 
           Matrix4 worldTransform = Matrix4::CreateScale(1);
-          worldTransform *= Matrix4::CreateFromQuaternion(rotation.rotation);
-          worldTransform *= Matrix4::CreateTranslation(transform.position);
           Matrix4 world = scaleMat * worldTransform;
           SetMatrixUniform(shader.programID, "uWorldTransform", &world);
+          SetMatrixUniform(shader.programID, "uViewProj", &viewProj);
           SetMeshActive(mesh.arrayID);
           DrawMesh(mesh.numVerts);
       }

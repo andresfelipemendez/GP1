@@ -30,7 +30,6 @@ bool Initialize(GameData *gd, entt::registry *registry) {
       SDL_Log("Failed to Initialize Renderer");
       return false;
   }
-  CreateSpriteVerts(gd, registry);
 
   Random::Init();
 

@@ -77,7 +77,7 @@
     },
     {
       "name": "sprite example",
-      "component": [
+      "components": [
         {
           "type": "sprite",
           "filePath": "Radar.png"

@@ -21,7 +21,7 @@ void ShutDown(GameData *gd);
 void ProcessInput(GameData *gd, entt::registry *registry);
 void UpdateGame(GameData *gd, entt::registry *registry);
 void GenerateOutput(GameData *gd, entt::registry *registry);
-void CreateSpriteVerts(GameData *gd, entt::registry *registry);
+
 void LoadData(GameData *gd, entt::registry *registry);
 void UnloadData(GameData *gd);
 

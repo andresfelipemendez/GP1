@@ -201,6 +201,27 @@ void LoadScene(entt::registry* registry, const std::string& path) {
                 }
             }
 
+            if (type == "sprite") {
+                if (component["filePath"].is_string()) {
+                    std::string path = component["filePath"];
+                    path = "Assets/" + path;
+                    auto t = LoadTexture(path);
+                    auto& sprite = registry->emplace<Sprite>(e);
+                    sprite.textureID = t.textureID;
+                    sprite.scale = t.scale;
+                    sprite.texHeight = t.texHeight;
+                    sprite.texWidth = t.texWidth;
+
+                    auto spriteVerts = CreateSpriteVerts();
+                    auto& mesh = registry->emplace<Mesh>(e);
+                    mesh.arrayID = spriteVerts;
+                    mesh.numVerts = 6;
+
+                    auto& rot = registry->emplace<Rotation>(e);
+                    rot.rotation = Quaternion::Identity;
+                }
+            }
+
             if (type == "ambientLight") {
                 if (component["color"].is_array() && component["color"].size() == 3) {
                     auto& alc = registry->emplace<AmbientLightColor>(e);
