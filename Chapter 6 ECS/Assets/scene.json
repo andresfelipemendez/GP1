@@ -32,8 +32,8 @@
       "name": "cube",
       "components": [
         {
-          "type": "mesh",
-          "filePath": "bevel-hq-brick-1x1.obj"
+          "type": "model",
+          "filePath": "bed.glb"
         },
         {
           "type": "texture",

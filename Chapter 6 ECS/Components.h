@@ -41,6 +41,10 @@ struct Mesh {
 	size_t numVerts;
 };
 
+struct MultiMesh {
+	std::vector<Mesh> meshes;
+};
+
 struct VertexArray {
 	unsigned int arrayID;
 	size_t numVerts;

@@ -159,6 +159,41 @@ void RenderSystem(GameData *gd, entt::registry *registry) {
     }
   );
 
+  auto multimeshview = registry->view<
+      const Shader,
+      const MultiMesh,
+      const Texture,
+      const Translation,
+      const Rotation>();
+  multimeshview.each([&viewProj, &alc, &invView, &dl]
+  (
+      const Shader& shader,
+      const MultiMesh& meshes,
+      const Texture& texture,
+      const Translation& transform,
+      const Rotation& rotation
+      )
+      {
+          Matrix4 worldTransform = Matrix4::CreateScale(1);
+          worldTransform *= Matrix4::CreateFromQuaternion(rotation.rotation);
+          worldTransform *= Matrix4::CreateTranslation(transform.position);
+          SetShaderActive(shader.programID);
+          SetTextureActive(texture.textureID);
+          for (const auto& mesh : meshes.meshes)
+          {
+              SetMeshActive(mesh.arrayID);
+              SetVectorUniform(shader.programID, "uCameraPos", invView.GetTranslation());
+              SetVectorUniform(shader.programID, "uAmbientLight", alc.color);
+              SetVectorUniform(shader.programID, "uDirLight.mDirection", dl.direction);
+              SetVectorUniform(shader.programID, "uDirLight.mDiffuseColor", dl.diffuseColor);
+              SetVectorUniform(shader.programID, "uDirLight.mSpecColor", dl.specColor);
+              SetMatrixUniform(shader.programID, "uViewProj", &viewProj);
+              SetMatrixUniform(shader.programID, "uWorldTransform", &worldTransform);
+              DrawMesh(mesh.numVerts);
+          }
+      }
+  );
+
 
   BeginDrawTransparent();
   auto view = registry->view<

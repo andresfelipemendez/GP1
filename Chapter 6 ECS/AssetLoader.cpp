@@ -158,22 +158,33 @@ void LoadScene(entt::registry* registry, const std::string& path) {
                 if (component["filePath"].is_string()) {
                     std::string path = component["filePath"];
                     path = "Assets/" + path;
-                    Mesh vertexArray{};
-                    if (path.ends_with(".glft") || path.ends_with(".glb")) {
-                       vertexArray = LoadGLTFMesh(path);
+                    Mesh vertexArray{};                    
+                    if (path.ends_with(".obj") && !LoadOBJMesh(path, vertexArray)) {
+                        auto& mesh = registry->emplace<Mesh>(e);
+                        mesh.arrayID = vertexArray.arrayID;
+                        mesh.numVerts = vertexArray.numVerts;
                     }
                     
-                    if (path.ends_with(".obj") && !LoadOBJMesh(path, vertexArray)) {
-                        continue;
-                    }
-                    auto& mesh = registry->emplace<Mesh>(e);
-                    mesh.arrayID = vertexArray.arrayID;
-                    mesh.numVerts = vertexArray.numVerts;
 				}
 				else {
 					std::cerr << "Mesh component skipped due to missing data." << std::endl;
 				}
 			}
+
+            if (type == "model") {
+                if (component["filePath"].is_string()) {
+                    std::string path = component["filePath"];
+                    path = "Assets/" + path;
+                    Mesh vertexArray{};
+                    if (path.ends_with(".gltf") || path.ends_with(".glb")) {
+                        auto& newMesh = registry->emplace<MultiMesh>(e);
+                        newMesh.meshes = LoadGLTFMeshes(path);
+                    }
+                }
+                else {
+                    std::cerr << "Mesh component skipped due to missing data." << std::endl;
+                }
+            }
 
             if (type == "material") {
                 if (component["shader"].is_string())
@@ -330,105 +341,82 @@ bool LoadOBJMesh(const std::string& path, Mesh& mesh)
     return true;
 }
 
-Mesh LoadGLTFMesh(const std::string& path) {
-	tinygltf::Model model;
-	tinygltf::TinyGLTF loader;
-	std::string err;
-	std::string warn;
+std::vector<Mesh> LoadGLTFMeshes(const std::string& path) {
+    tinygltf::Model model;
+    tinygltf::TinyGLTF loader;
+    std::string err;
+    std::string warn;
 
-	bool ret = false;
-	if (path.ends_with(".glb")) {
-		ret = loader.LoadBinaryFromFile(&model, &err, &warn, path);
-	}
-	else {
-		ret = loader.LoadASCIIFromFile(&model, &err, &warn, path);
-	}
+    bool ret = false;
+    if (path.ends_with(".glb")) {
+        ret = loader.LoadBinaryFromFile(&model, &err, &warn, path);
+    }
+    else {
+        ret = loader.LoadASCIIFromFile(&model, &err, &warn, path);
+    }
 
+    if (!warn.empty()) {
+        std::cerr << "Warning: " << warn << std::endl;
+    }
 
-	if (!warn.empty()) {
-		std::cerr << "Warning: " << warn << std::endl;
-	}
+    if (!err.empty()) {
+        std::cerr << "Error: " << err << std::endl;
+    }
 
-	if (!err.empty()) {
-		std::cerr << "Error: " << err << std::endl;
-	}
-
-	if (!ret) {
-		std::cerr << "Failed to load glTF file." << std::endl;
-        return {};
-	}
-   
-  
-    if (model.scenes.size() > 1) {
-        SDL_Log("the engine don't support more than one scene");
+    if (!ret) {
+        std::cerr << "Failed to load glTF file." << std::endl;
         return {};
     }
-    const tinygltf::Scene& scene = model.scenes[0];
-    if (scene.nodes.size() > 1) {
-        SDL_Log("the engine don't support more than one node per gltf file");
-        return {};
-    }
-    if (model.meshes.size() > 1) {
-        SDL_Log("the engine don't support more than one mesh per gltf file");
-        return {};
-    }
-    const tinygltf::Mesh& mesh = model.meshes[0];
-    
-    auto size = mesh.primitives.size();
 
-    GLuint vao;
-    int numVertices = 0;
-    glGenVertexArrays(1, &vao);
-    glBindVertexArray(vao);
+    std::vector<Mesh> meshes;
+    for (const auto& primitive : model.meshes[0].primitives) {
+        std::vector<float> combinedVertices;
+        std::vector<unsigned int> combinedIndices;
 
-    std::map<int, GLuint> vbos;
-    for (size_t i = 0; i < model.bufferViews.size(); ++i) {
-        const tinygltf::BufferView& bufferView = model.bufferViews[i];
-        const tinygltf::Buffer& buffer = model.buffers[bufferView.buffer];
-        GLuint vbo;
-        glGenBuffers(1, &vbo);
-        vbos[i] = vbo;
-        if (bufferView.target == GL_ELEMENT_ARRAY_BUFFER) {
-            numVertices = bufferView.byteLength;
-        }
-        glBindBuffer(bufferView.target, vbo);
-        glBufferData(bufferView.target, bufferView.byteLength, &buffer.data.at(0) + bufferView.byteOffset, GL_STATIC_DRAW);
+        // Access positions
+        auto it = primitive.attributes.find("POSITION");
+        if (it != primitive.attributes.end()) {
+            const tinygltf::Accessor& posAccessor = model.accessors[it->second];
+            const tinygltf::BufferView& posBufferView = model.bufferViews[posAccessor.bufferView];
+            const tinygltf::Buffer& posBuffer = model.buffers[posBufferView.buffer];
 
-    }
+            const unsigned char* posData = posBuffer.data.data() + posBufferView.byteOffset + posAccessor.byteOffset;
+            const float* positions = reinterpret_cast<const float*>(posData);
 
-
-    const tinygltf::Primitive& primitive = mesh.primitives[0];
-    const tinygltf::Accessor indexAccessor = model.accessors[primitive.indices];
-    
-
-    for (const auto& attrib : primitive.attributes) {
-        const tinygltf::Accessor accessor = model.accessors[attrib.second];
-        int byteStride = accessor.ByteStride(model.bufferViews[accessor.bufferView]);
-
-        glBindBuffer(GL_ARRAY_BUFFER, vbos[accessor.bufferView]);
-
-        int size = 1;
-        if (accessor.type != TINYGLTF_TYPE_SCALAR) {
-            size = accessor.type;
+            for (size_t i = 0; i < posAccessor.count; ++i) {
+                size_t vertexIndex = i * (posAccessor.ByteStride(posBufferView) / sizeof(float));
+                combinedVertices.insert(combinedVertices.end(), positions + vertexIndex, positions + vertexIndex + 3);
+            }
         }
 
-        int vaa = -1;
-        if (attrib.first.compare("POSITION") == 0) vaa = 0;
-        if (attrib.first.compare("NORMAL") == 0) vaa = 1;
-        if (attrib.first.compare("TEXCOORD_0") == 0) vaa = 2;
-        if (vaa > -1) {
-            glEnableVertexAttribArray(vaa);
-            glVertexAttribPointer(vaa, size, accessor.componentType,
-                accessor.normalized ? GL_TRUE : GL_FALSE,
-                byteStride, BUFFER_OFFSET(accessor.byteOffset));
+        // Access indices
+        if (primitive.indices >= 0) {
+            const tinygltf::Accessor& indexAccessor = model.accessors[primitive.indices];
+            const tinygltf::BufferView& indexBufferView = model.bufferViews[indexAccessor.bufferView];
+            const tinygltf::Buffer& indexBuffer = model.buffers[indexBufferView.buffer];
+
+            const unsigned char* indexData = indexBuffer.data.data() + indexBufferView.byteOffset + indexAccessor.byteOffset;
+            if (indexAccessor.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT) {
+                const unsigned short* indices = reinterpret_cast<const unsigned short*>(indexData);
+                for (size_t i = 0; i < indexAccessor.count; ++i) {
+                    combinedIndices.push_back(indices[i]);
+                }
+            }
+            else if (indexAccessor.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT) {
+                const unsigned int* indices = reinterpret_cast<const unsigned int*>(indexData);
+                for (size_t i = 0; i < indexAccessor.count; ++i) {
+                    combinedIndices.push_back(indices[i]);
+                }
+            }
+            else {
+                std::cerr << "Unsupported index type" << std::endl;
+                continue;
+            }
         }
-        else {
-            std::cout << "vaa missing: " << attrib.first << std::endl;
-        }
+
+        uint32_t vao = UploadMeshToGPU(combinedIndices, combinedVertices, 3 * sizeof(float));
+        meshes.push_back({ vao, combinedIndices.size() });
     }
 
-    Mesh m;
-    m.arrayID = vao;
-    m.numVerts = indexAccessor.count;
-    return m;
+    return meshes;
 }
