@@ -33,7 +33,7 @@
       "components": [
         {
           "type": "model",
-          "filePath": "bed.glb"
+          "filePath": "SimpleSkin.gltf"
         },
         {
           "type": "texture",

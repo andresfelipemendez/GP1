@@ -369,9 +369,16 @@ std::vector<Mesh> LoadGLTFMeshes(const std::string& path) {
     }
 
     std::vector<Mesh> meshes;
+
+    std::vector<uint32_t> m_Indices{};
+    std::vector<SkinnedVertex> m_Vertices{};
+    std::vector<Submesh> m_Submeshes{};
+
     for (const auto& primitive : model.meshes[0].primitives) {
         std::vector<float> combinedVertices;
         std::vector<unsigned int> combinedIndices;
+
+
 
         // Access positions
         auto it = primitive.attributes.find("POSITION");

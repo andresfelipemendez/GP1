@@ -1,0 +1,7 @@
+{
+    "cmake.configureOnOpen": false,
+    "C_Cpp.default.compilerPath": "cl.exe",
+    "files.associations": {
+        "vector": "cpp"
+    }
+}

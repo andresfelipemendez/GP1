@@ -7,30 +7,33 @@
 #include "AssetLoader.h"
 #include "Game.h"
 
-bool InitializeRenderer(GameData* gd) {
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
-    SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
-    SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
-    SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
-    SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
-    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-    SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);
-    SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
-    glEnable(GL_DEPTH_TEST);
-    gd->context = SDL_GL_CreateContext(gd->window);
+bool InitializeRenderer(GameData *gd)
+{
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
+  SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
+  SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
+  SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
+  SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
+  SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+  SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);
+  SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
+  glEnable(GL_DEPTH_TEST);
+  gd->context = SDL_GL_CreateContext(gd->window);
 
-    glewExperimental = GL_TRUE;
-    if (glewInit() != GLEW_OK) {
-        SDL_Log("Failed to initialize GLEW.");
-        return false;
-    }
-    return true;
+  glewExperimental = GL_TRUE;
+  if (glewInit() != GLEW_OK)
+  {
+    SDL_Log("Failed to initialize GLEW.");
+    return false;
+  }
+  return true;
 }
 
-uint32_t CreateSpriteVerts() {
-    // clang-format off
+uint32_t CreateSpriteVerts()
+{
+  // clang-format off
     std::vector<float> vertices{
        -0.5f,   0.5f,  0.f,  0.f,  0.f,
         0.5f,   0.5f,  0.f,  1.f,  0.f,
@@ -70,6 +73,52 @@ uint32_t LoadMesh(std::vector<float> vertices, std::vector<unsigned int> indices
   glEnableVertexAttribArray(1);
   glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 5,
                         reinterpret_cast<void *>(sizeof(float) * 3));
+  return vertexArray;
+}
+
+
+uint32_t LoadSkinnedMesh(std::vector<float> vertices, std::vector<unsigned int> indices) 
+{
+  unsigned int vertexArray;
+  unsigned int vertexBuffer;
+  unsigned int indexBuffer;
+  glGenVertexArrays(1, &vertexArray);
+  glBindVertexArray(vertexArray);
+
+  glGenBuffers(1, &vertexBuffer);
+  glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
+  glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float),
+               vertices.data(), GL_STATIC_DRAW);
+
+  glGenBuffers(1, &indexBuffer);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int),
+               indices.data(), GL_STATIC_DRAW);
+
+  size_t vertexSize = (sizeof(float) * 8) + (sizeof(char) * 8);
+  
+  // position is 3 floats
+  glEnableVertexAttribArray(0);
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, vertexSize, 0);
+
+  // normal is 3 floats
+  glEnableVertexAttribArray(1);
+  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, vertexSize, 
+    reinterpret_cast<void*>(sizeof(float)*3));
+
+  // skinning bones
+  glEnableVertexAttribArray(2);
+  glVertexAttribIPointer(2, 4, GL_UNSIGNED_BYTE, vertexSize, 
+    reinterpret_cast<void*>(sizeof(float)*6));
+  
+  // skinning weights
+  glEnableVertexAttribArray(3);
+  glVertexAttribPointer(3, 4, GL_UNSIGNED_BYTE, GL_TRUE, vertexSize, 
+    reinterpret_cast<void*>(sizeof(float)*6 + 4));
+
+  glEnableVertexAttribArray(4);
+  glVertexAttribPointer(4, 2, GL_FLOAT, GL_FALSE, vertexSize,
+    reinterpret_cast<void *>(sizeof(float) * 6 + 8));
   return vertexArray;
 }
 
@@ -246,8 +295,6 @@ void BeginDrawOpaque()
 }
 
 void BeginDrawTransparent() {
-    /*glClearColor(0.86f, 0.86f, 0.86f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);*/
     glDisable(GL_DEPTH_TEST);
     glEnable(GL_BLEND);
     glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);

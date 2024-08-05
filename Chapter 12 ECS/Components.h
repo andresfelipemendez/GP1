@@ -1,6 +1,6 @@
 #pragma once
 #include "Math.h"
-
+#include "glm.hpp"
 
 struct Camera {
 	float fov;
@@ -37,6 +37,11 @@ struct Sprite {
 };
 
 struct Mesh {
+	unsigned int arrayID;
+	size_t numVerts;
+};
+
+struct SkinnedMesh {
 	unsigned int arrayID;
 	size_t numVerts;
 };
@@ -94,4 +99,43 @@ struct Input {
   int backKey;
   int clockwiseKey;
   int counterClockwiseKey;
+};
+
+struct BoneTransform
+{
+	Quaternion rotation;
+	Vector3 translation;
+};
+
+struct Bone {
+	BoneTransform localBindBose;
+	std::string name;
+	int parent;
+};
+
+struct Skeleton {
+	std::vector<Bone> bones;
+	std::vector<Matrix4> globalInvertBindBones;
+};
+
+struct SkinnedVertex
+{
+	glm::vec3 m_Position;  // layout(location = 0)
+	glm::vec4 m_Color;     // layout(location = 1)
+	glm::vec3 m_Normal;    // layout(location = 2)
+	glm::vec2 m_UV;        // layout(location = 3)
+	glm::vec3 m_Tangent;   // layout(location = 4)
+	glm::ivec4 m_JointIds; // layout(location = 5)
+	glm::vec4 m_Weights;   // layout(location = 6)
+};
+
+struct Submesh
+{
+	uint32_t m_FirstIndex;
+	uint32_t m_FirstVertex;
+	uint32_t m_IndexCount;
+	uint32_t m_VertexCount;
+	uint32_t m_InstanceCount;
+	/*Material m_Material;
+	Resources m_Resources;*/
 };
