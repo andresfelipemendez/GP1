@@ -135,7 +135,7 @@ struct Submesh
 	uint32_t m_FirstVertex;
 	uint32_t m_IndexCount;
 	uint32_t m_VertexCount;
-	uint32_t m_InstanceCount;
+	uint32_t m_InstanceCount = 0;
 	/*Material m_Material;
 	Resources m_Resources;*/
 };

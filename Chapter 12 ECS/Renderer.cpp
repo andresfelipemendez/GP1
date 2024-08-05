@@ -77,49 +77,54 @@ uint32_t LoadMesh(std::vector<float> vertices, std::vector<unsigned int> indices
 }
 
 
-uint32_t LoadSkinnedMesh(std::vector<float> vertices, std::vector<unsigned int> indices) 
+uint32_t LoadSkinnedMesh(const std::vector<SkinnedVertex>& vertices, const std::vector<unsigned int>& indices)
 {
-  unsigned int vertexArray;
-  unsigned int vertexBuffer;
-  unsigned int indexBuffer;
-  glGenVertexArrays(1, &vertexArray);
-  glBindVertexArray(vertexArray);
+    unsigned int vertexArray, vertexBuffer, indexBuffer;
 
-  glGenBuffers(1, &vertexBuffer);
-  glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
-  glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float),
-               vertices.data(), GL_STATIC_DRAW);
+    glGenVertexArrays(1, &vertexArray);
+    glBindVertexArray(vertexArray);
 
-  glGenBuffers(1, &indexBuffer);
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
-  glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int),
-               indices.data(), GL_STATIC_DRAW);
+    glGenBuffers(1, &vertexBuffer);
+    glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
+    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(SkinnedVertex), vertices.data(), GL_STATIC_DRAW);
 
-  size_t vertexSize = (sizeof(float) * 8) + (sizeof(char) * 8);
-  
-  // position is 3 floats
-  glEnableVertexAttribArray(0);
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, vertexSize, 0);
+    glGenBuffers(1, &indexBuffer);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), indices.data(), GL_STATIC_DRAW);
 
-  // normal is 3 floats
-  glEnableVertexAttribArray(1);
-  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, vertexSize, 
-    reinterpret_cast<void*>(sizeof(float)*3));
+    size_t stride = sizeof(SkinnedVertex);
 
-  // skinning bones
-  glEnableVertexAttribArray(2);
-  glVertexAttribIPointer(2, 4, GL_UNSIGNED_BYTE, vertexSize, 
-    reinterpret_cast<void*>(sizeof(float)*6));
-  
-  // skinning weights
-  glEnableVertexAttribArray(3);
-  glVertexAttribPointer(3, 4, GL_UNSIGNED_BYTE, GL_TRUE, vertexSize, 
-    reinterpret_cast<void*>(sizeof(float)*6 + 4));
+    // Position (layout = 0)
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, stride, (void*)offsetof(SkinnedVertex, m_Position));
 
-  glEnableVertexAttribArray(4);
-  glVertexAttribPointer(4, 2, GL_FLOAT, GL_FALSE, vertexSize,
-    reinterpret_cast<void *>(sizeof(float) * 6 + 8));
-  return vertexArray;
+    // Color (layout = 1)
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, stride, (void*)offsetof(SkinnedVertex, m_Color));
+
+    // Normal (layout = 2)
+    glEnableVertexAttribArray(2);
+    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, stride, (void*)offsetof(SkinnedVertex, m_Normal));
+
+    // UV (layout = 3)
+    glEnableVertexAttribArray(3);
+    glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, stride, (void*)offsetof(SkinnedVertex, m_UV));
+
+    // Tangent (layout = 4)
+    glEnableVertexAttribArray(4);
+    glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, stride, (void*)offsetof(SkinnedVertex, m_Tangent));
+
+    // Joint IDs (layout = 5)
+    glEnableVertexAttribArray(5);
+    glVertexAttribIPointer(5, 4, GL_INT, stride, (void*)offsetof(SkinnedVertex, m_JointIds));
+
+    // Weights (layout = 6)
+    glEnableVertexAttribArray(6);
+    glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, stride, (void*)offsetof(SkinnedVertex, m_Weights));
+
+    glBindVertexArray(0);
+
+    return vertexArray;
 }
 
 uint32_t UploadMeshToGPU(const std::vector<uint32_t>& indices,const std::vector<float>& vertices, size_t stride) {

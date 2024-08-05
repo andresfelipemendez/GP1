@@ -41,7 +41,7 @@
         },
         {
           "type": "material",
-          "shader": "Phong",
+          "shader": "Skinned",
           "color": [ 1, 0, 0 ]
         },
         {

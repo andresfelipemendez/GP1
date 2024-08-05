@@ -8,7 +8,7 @@ uint32_t CreateSpriteVerts();
 uint32_t LoadMesh(std::vector<float> vertices, std::vector<unsigned int> indices);
 uint32_t UploadMeshToGPU(const std::vector<uint32_t>& indices, const std::vector<float>& vertices,
     size_t stride);
-
+uint32_t LoadSkinnedMesh(const std::vector<SkinnedVertex>& vertices, const std::vector<unsigned int>& indices);
 Texture LoadTexture(const std::string& fileName);
 Shader LoadShader(const std::string& vertexShader, const std::string& fragmentShader);
 void BeginDrawOpaque();

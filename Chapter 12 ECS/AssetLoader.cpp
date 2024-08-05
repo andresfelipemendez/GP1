@@ -22,6 +22,8 @@
 #include <GL/glew.h>
 #define BUFFER_OFFSET(i) ((char *)NULL + (i))
 
+#include "gtc/type_ptr.hpp"
+
 ImageFile::ImageFile(const std::string& fileName)
 {
     stbi_set_flip_vertically_on_load(true);
@@ -370,59 +372,147 @@ std::vector<Mesh> LoadGLTFMeshes(const std::string& path) {
 
     std::vector<Mesh> meshes;
 
-    std::vector<uint32_t> m_Indices{};
-    std::vector<SkinnedVertex> m_Vertices{};
-    std::vector<Submesh> m_Submeshes{};
+    for (const auto& gltfMesh : model.meshes) {
+        for (const auto& primitive : gltfMesh.primitives) {
+            Mesh mesh;
+            std::vector<SkinnedVertex> vertices;
+            std::vector<uint32_t> indices;
 
-    for (const auto& primitive : model.meshes[0].primitives) {
-        std::vector<float> combinedVertices;
-        std::vector<unsigned int> combinedIndices;
+            const float* positionBuffer = nullptr;
+            const float* colorBuffer = nullptr;
+            const float* normalsBuffer = nullptr;
+            const float* tangentsBuffer = nullptr;
+            const float* texCoordsBuffer = nullptr;
+            const uint8_t* jointsBuffer = nullptr;
+            const float* weightsBuffer = nullptr;
 
+            size_t vertexCount = 0;
+            size_t indexCount = 0;
 
-
-        // Access positions
-        auto it = primitive.attributes.find("POSITION");
-        if (it != primitive.attributes.end()) {
-            const tinygltf::Accessor& posAccessor = model.accessors[it->second];
-            const tinygltf::BufferView& posBufferView = model.bufferViews[posAccessor.bufferView];
-            const tinygltf::Buffer& posBuffer = model.buffers[posBufferView.buffer];
-
-            const unsigned char* posData = posBuffer.data.data() + posBufferView.byteOffset + posAccessor.byteOffset;
-            const float* positions = reinterpret_cast<const float*>(posData);
-
-            for (size_t i = 0; i < posAccessor.count; ++i) {
-                size_t vertexIndex = i * (posAccessor.ByteStride(posBufferView) / sizeof(float));
-                combinedVertices.insert(combinedVertices.end(), positions + vertexIndex, positions + vertexIndex + 3);
+            // Access POSITION attribute
+            if (primitive.attributes.find("POSITION") != primitive.attributes.end()) {
+                const tinygltf::Accessor& accessor = model.accessors[primitive.attributes.at("POSITION")];
+                const tinygltf::BufferView& bufferView = model.bufferViews[accessor.bufferView];
+                const tinygltf::Buffer& buffer = model.buffers[bufferView.buffer];
+                positionBuffer = reinterpret_cast<const float*>(
+                    buffer.data.data() + bufferView.byteOffset + accessor.byteOffset);
+                vertexCount = accessor.count;
             }
-        }
 
-        // Access indices
-        if (primitive.indices >= 0) {
-            const tinygltf::Accessor& indexAccessor = model.accessors[primitive.indices];
-            const tinygltf::BufferView& indexBufferView = model.bufferViews[indexAccessor.bufferView];
-            const tinygltf::Buffer& indexBuffer = model.buffers[indexBufferView.buffer];
+            // Access COLOR_0 attribute (if available)
+            if (primitive.attributes.find("COLOR_0") != primitive.attributes.end()) {
+                const tinygltf::Accessor& accessor = model.accessors[primitive.attributes.at("COLOR_0")];
+                const tinygltf::BufferView& bufferView = model.bufferViews[accessor.bufferView];
+                const tinygltf::Buffer& buffer = model.buffers[bufferView.buffer];
+                colorBuffer = reinterpret_cast<const float*>(
+                    buffer.data.data() + bufferView.byteOffset + accessor.byteOffset);
+            }
 
-            const unsigned char* indexData = indexBuffer.data.data() + indexBufferView.byteOffset + indexAccessor.byteOffset;
-            if (indexAccessor.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT) {
-                const unsigned short* indices = reinterpret_cast<const unsigned short*>(indexData);
-                for (size_t i = 0; i < indexAccessor.count; ++i) {
-                    combinedIndices.push_back(indices[i]);
+            // Access NORMAL attribute (if available)
+            if (primitive.attributes.find("NORMAL") != primitive.attributes.end()) {
+                const tinygltf::Accessor& accessor = model.accessors[primitive.attributes.at("NORMAL")];
+                const tinygltf::BufferView& bufferView = model.bufferViews[accessor.bufferView];
+                const tinygltf::Buffer& buffer = model.buffers[bufferView.buffer];
+                normalsBuffer = reinterpret_cast<const float*>(
+                    buffer.data.data() + bufferView.byteOffset + accessor.byteOffset);
+            }
+
+            // Access TANGENT attribute (if available)
+            if (primitive.attributes.find("TANGENT") != primitive.attributes.end()) {
+                const tinygltf::Accessor& accessor = model.accessors[primitive.attributes.at("TANGENT")];
+                const tinygltf::BufferView& bufferView = model.bufferViews[accessor.bufferView];
+                const tinygltf::Buffer& buffer = model.buffers[bufferView.buffer];
+                tangentsBuffer = reinterpret_cast<const float*>(
+                    buffer.data.data() + bufferView.byteOffset + accessor.byteOffset);
+            }
+
+            // Access TEXCOORD_0 attribute (if available)
+            if (primitive.attributes.find("TEXCOORD_0") != primitive.attributes.end()) {
+                const tinygltf::Accessor& accessor = model.accessors[primitive.attributes.at("TEXCOORD_0")];
+                const tinygltf::BufferView& bufferView = model.bufferViews[accessor.bufferView];
+                const tinygltf::Buffer& buffer = model.buffers[bufferView.buffer];
+                texCoordsBuffer = reinterpret_cast<const float*>(
+                    buffer.data.data() + bufferView.byteOffset + accessor.byteOffset);
+            }
+
+            // Access JOINTS_0 attribute (if available)
+            if (primitive.attributes.find("JOINTS_0") != primitive.attributes.end()) {
+                const tinygltf::Accessor& accessor = model.accessors[primitive.attributes.at("JOINTS_0")];
+                const tinygltf::BufferView& bufferView = model.bufferViews[accessor.bufferView];
+                const tinygltf::Buffer& buffer = model.buffers[bufferView.buffer];
+                jointsBuffer = reinterpret_cast<const uint8_t*>(
+                    buffer.data.data() + bufferView.byteOffset + accessor.byteOffset);
+            }
+
+            // Access WEIGHTS_0 attribute (if available)
+            if (primitive.attributes.find("WEIGHTS_0") != primitive.attributes.end()) {
+                const tinygltf::Accessor& accessor = model.accessors[primitive.attributes.at("WEIGHTS_0")];
+                const tinygltf::BufferView& bufferView = model.bufferViews[accessor.bufferView];
+                const tinygltf::Buffer& buffer = model.buffers[bufferView.buffer];
+                weightsBuffer = reinterpret_cast<const float*>(
+                    buffer.data.data() + bufferView.byteOffset + accessor.byteOffset);
+            }
+
+            // Process vertices
+            vertices.resize(vertexCount);
+            for (size_t i = 0; i < vertexCount; ++i) {
+                SkinnedVertex vertex;
+
+                if (positionBuffer) {
+                    vertex.m_Position = glm::make_vec3(positionBuffer + i * 3);
+                }
+                if (colorBuffer) {
+                    vertex.m_Color = glm::vec4(glm::make_vec3(colorBuffer + i * 3), 1.0f);
+                }
+                if (normalsBuffer) {
+                    vertex.m_Normal = glm::normalize(glm::make_vec3(normalsBuffer + i * 3));
+                }
+                if (texCoordsBuffer) {
+                    vertex.m_UV = glm::make_vec2(texCoordsBuffer + i * 2);
+                }
+                if (tangentsBuffer) {
+                    glm::vec4 tangent = glm::make_vec4(tangentsBuffer + i * 4);
+                    vertex.m_Tangent = glm::vec3(tangent);
+                }
+
+                if (jointsBuffer && weightsBuffer) {
+                    vertex.m_JointIds = glm::ivec4(jointsBuffer[i * 4 + 0], jointsBuffer[i * 4 + 1],
+                        jointsBuffer[i * 4 + 2], jointsBuffer[i * 4 + 3]);
+                    vertex.m_Weights = glm::make_vec4(weightsBuffer + i * 4);
+                }
+
+                vertices[i] = vertex;
+            }
+
+            // Access indices
+            if (primitive.indices >= 0) {
+                const tinygltf::Accessor& accessor = model.accessors[primitive.indices];
+                const tinygltf::BufferView& bufferView = model.bufferViews[accessor.bufferView];
+                const tinygltf::Buffer& buffer = model.buffers[bufferView.buffer];
+                const void* data = buffer.data.data() + bufferView.byteOffset + accessor.byteOffset;
+
+                indexCount = accessor.count;
+                indices.resize(indexCount);
+
+                if (accessor.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT) {
+                    const uint16_t* buf = static_cast<const uint16_t*>(data);
+                    for (size_t i = 0; i < indexCount; ++i) {
+                        indices[i] = buf[i];
+                    }
+                }
+                else if (accessor.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT) {
+                    const uint32_t* buf = static_cast<const uint32_t*>(data);
+                    for (size_t i = 0; i < indexCount; ++i) {
+                        indices[i] = buf[i];
+                    }
                 }
             }
-            else if (indexAccessor.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT) {
-                const unsigned int* indices = reinterpret_cast<const unsigned int*>(indexData);
-                for (size_t i = 0; i < indexAccessor.count; ++i) {
-                    combinedIndices.push_back(indices[i]);
-                }
-            }
-            else {
-                std::cerr << "Unsupported index type" << std::endl;
-                continue;
-            }
-        }
 
-        uint32_t vao = UploadMeshToGPU(combinedIndices, combinedVertices, 3 * sizeof(float));
-        meshes.push_back({ vao, combinedIndices.size() });
+            //auto meshId = 
+            mesh.arrayID = LoadSkinnedMesh(vertices, indices);
+            mesh.numVerts = indices.size();
+            meshes.push_back(std::move(mesh));
+        }
     }
 
     return meshes;
