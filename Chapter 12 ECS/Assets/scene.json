@@ -46,11 +46,11 @@
         },
         {
           "type": "translation",
-          "position": [ 0, 0, 0 ]
+          "position": [ 0, -2, -0.8 ]
         },
         {
           "type": "rotation",
-          "euler": [ 45, 0, -40 ]
+          "euler": [ 90, 0, 0 ]
         }
 
       ]
